@@ -1,0 +1,46 @@
+<%- include('partials/header') %>
+<main>
+<% if (typeof visionData !== 'undefined' && visionData) { %>
+
+  <%# Use dynamic background, height adjusted for potentially shorter content %>
+  <section class="about-hero bg-cover bg-center h-80 md:h-96 text-white flex items-center relative" style="background-image: url('<%= visionData.hero?.backgroundImage ?? '/images/about-hero.jpg' %>')">
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-indigo-900/80 z-10"></div>
+    <div class="container mx-auto text-center relative z-20 px-4">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 animate-fade-in"><%= visionData.hero?.title ?? 'Our Vision' %></h1>
+      <p class="text-lg md:text-xl max-w-3xl mx-auto animate-slide-up"><%= visionData.hero?.subtitle ?? 'Default vision subtitle.' %></p>
+    </div>
+  </section>
+
+  <section class="py-16 md:py-20 bg-gray-50"> <%# Changed background slightly %>
+     <div class="container mx-auto px-4">
+        <%# Added icon and improved spacing/alignment %>
+       <div class="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-lg">
+           <div class="text-center mb-10">
+               <i class="fas fa-binoculars text-4xl text-indigo-600 mb-4"></i>
+               <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4"><%= visionData.content?.title ?? 'Content Title' %></h2>
+               <div class="w-20 h-1 bg-indigo-500 mx-auto"></div>
+           </div>
+          <%# Use whitespace-pre-line to respect newlines from textarea %>
+          <p class="text-lg text-gray-700 leading-relaxed whitespace-pre-line"><%= visionData.content?.body ?? 'Default content body.' %></p>
+       </div>
+     </div>
+   </section>
+
+<% } else { %>
+    <section class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-4 text-center">
+             <h2 class="text-2xl font-semibold text-red-600">Content Unavailable</h2>
+             <p class="text-gray-600 mt-4">We couldn't load the page content. Please try again later.</p>
+        </div>
+    </section>
+<% } %>
+</main>
+
+<%# Assuming a static footer here based on your example %>
+<footer class="bg-gray-800 text-white py-8">
+  <div class="container mx-auto text-center">
+    <p>© 2025 PMAFA. All rights reserved.</p>
+  </div>
+</footer>
+</body>
+</html>

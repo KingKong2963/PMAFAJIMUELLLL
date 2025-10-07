@@ -1,0 +1,269 @@
+<%- include('partials/header') %>
+
+<link rel="stylesheet" href="/css/per-barangay.css">
+
+<style>
+    /* --- Hero Section Styling for Public Page --- */
+    #barangay-public-hero {
+        position: relative; /* For positioning overlay and content */
+        background-size: cover; /* Ensure background image covers the area */
+        background-position: center; /* Center the background image */
+        /* The actual background-image URL will be set via inline style in the EJS */
+    }
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      
+        z-index: 1; /* Overlay is above background, below content */
+    }
+    #barangay-public-hero .hero-content-container { /* Renamed for clarity */
+        position: relative; /* Ensure content is above overlay */
+        z-index: 2;
+    }
+    /* Default text color for hero elements to white */
+    #barangay-public-hero .hero-content-container h1,
+    #barangay-public-hero .hero-content-container p,
+    #barangay-public-hero .hero-content-container a:not(.view-details-link) { /* Exclude specific links if they have their own color */
+        color: #ffffff;
+    }
+    #barangay-public-hero .scroll-down-link i { /* Chevron icon color */
+        color: #ffffff;
+    }
+    /* --- End Hero Styling --- */
+
+    /* Modal Styles (Keep as refined before - from your provided EJS) */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; padding: 1rem; }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-content { background-color: white; padding: 1.5rem 2rem 2rem 2rem; border-radius: 8px; max-width: 550px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; transform: scale(0.9); transition: transform 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .modal-overlay.active .modal-content { transform: scale(1); }
+    .modal-close-btn { position: absolute; top: 10px; right: 10px; background: #eee; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; color: #555; }
+    .modal-close-btn:hover { background: #ddd; color: #000; }
+    #modalOfficersList { margin-bottom: 1.5rem; }
+    #modalOfficersList p { background-color: #f3f4f6; padding: 10px 15px; margin-bottom: 6px; border-radius: 5px; border: 1px solid #e5e7eb; display: block; font-size: 0.95em; line-height: 1.4; }
+    #modalOfficersList p .officer-title { font-weight: 600; color: #4b5563; min-width: 130px; display: inline-block; margin-right: 8px; }
+    #modalOfficersList p .officer-name { color: #1f2937; }
+    #modalDirectorsList { list-style: none; padding: 0; margin-top: 0.5rem; }
+    #modalDirectorsList li { background-color: #f3f4f6; padding: 10px 15px; border-radius: 5px; margin-bottom: 6px; font-size: 0.95em; line-height: 1.4; border: 1px solid #e5e7eb; }
+    #modalDirectorsList li strong { font-weight: 600; color: #4b5563; margin-right: 8px; }
+    #modalDirectorsList li .director-name { color: #1f2937; }
+    /* --- End Modal Styles --- */
+
+    /* --- Refined Barangay Info Card Styles for GRID (from your provided EJS) --- */
+    .barangay-info-card { display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.04); text-align: center; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; cursor: pointer; background-color: white; border: 1px solid #e5e7eb; border-top: 4px solid #4f46e5; position: relative; }
+    .barangay-info-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    .barangay-info-card .card-barangay-name { font-size: 1.25rem; font-weight: 600; color: #4338ca; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid #d1d5db; }
+    .barangay-info-card .president-info { display: flex; align-items: center; justify-content: center; text-align: left; gap: 0.75rem; margin-bottom: 1.25rem; flex-grow: 1; flex-direction: column; align-items: center; }
+    .barangay-info-card .president-info .president-image { /* Style for president image in card */
+        width: 80px; /* Adjust size as needed */
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 0.5rem; /* space below image */
+        border: 2px solid #e5e7eb; /* Optional border */
+    }
+    .barangay-info-card .president-info .label { font-size: 0.9rem; color: #6b7280; display: block; }
+    .barangay-info-card .president-info .name { font-size: 1.15rem; font-weight: 600; color: #111827; line-height: 1.3; text-align: center;}
+    .barangay-info-card .view-details-link { display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #3730a3; font-weight: 500; text-decoration: none; padding: 8px 14px; border-radius: 4px; background-color: rgba(79, 70, 229, 0.05); transition: background-color 0.2s ease, color 0.2s ease; margin-top: auto; }
+    .barangay-info-card .view-details-link:hover { background-color: rgba(79, 70, 229, 0.1); color: #1e1b4b; }
+    .barangay-info-card .view-details-link i { margin-left: 0.35rem; font-size: 0.75em; transition: transform 0.2s ease; }
+    .barangay-info-card:hover .view-details-link i { transform: translateX(3px); }
+    /* --- End Refined Card Styles --- */
+</style>
+
+<main>
+    <% if (typeof barangayData !== 'undefined' && barangayData && barangayData.hero) { %>
+    
+      <section id="barangay-public-hero" class="h-screen flex items-center justify-center overflow-hidden" style="background-image: url('<%= barangayData.hero.backgroundImage || '/images/default-barangay-hero.jpg' %>'); background-size: contain; background-repeat: no-repeat; ">
+          <div class="hero-overlay"></div> <div class="hero-content-container container mx-auto px-4 text-center"> <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 animate-fade-in"><%= barangayData.hero.title ?? 'Barangay Leadership' %></h1>
+            <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto animate-slide-up"><%= barangayData.hero.subtitle ?? 'Meet the leaders serving our communities.' %></p>
+          </div>
+          <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20 scroll-down-link"> <a href="#barangays-public-section" class="opacity-70 hover:opacity-100 transition">
+              <i class="fas fa-chevron-down text-2xl"></i>
+            </a>
+          </div>
+      </section>
+    
+      <section id="barangays-public-section" class="py-16 md:py-24 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4"><%= barangayData.mainSection?.title ?? 'Our Barangays' %></h2>
+                <div class="w-24 h-1 bg-indigo-600 mx-auto mb-6"></div>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto"><%= barangayData.mainSection?.subtitle ?? 'Dedicated individuals leading our local communities.' %></p>
+            </div>
+    
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <% if(barangayData.mainSection?.barangays && barangayData.mainSection.barangays.length > 0) { %>
+                    <% barangayData.mainSection.barangays.forEach((barangay, index) => { %>
+                        <% const officers = barangay.officers || {}; %>
+                        <% const directors = officers.boardOfDirectors || []; %>
+                        <% const presidentImage = officers.presidentImage || 'https://via.placeholder.com/100/cccccc/888888?text=No+Image'; %>
+    
+                        <div class="barangay-info-card"
+                            data-barangay-name="<%= barangay.name ?? 'N/A' %>"
+                            data-president="<%= officers.president ?? 'N/A' %>"
+                            data-vp="<%= officers.vicePresident ?? 'N/A' %>"
+                            data-secretary="<%= officers.secretary ?? 'N/A' %>"
+                            data-asst-secretary="<%= officers.asstSecretary ?? 'N/A' %>"
+                            data-treasurer="<%= officers.treasurer ?? 'N/A' %>"
+                            data-asst-treasurer="<%= officers.asstTreasurer ?? 'N/A' %>"
+                            data-auditor="<%= officers.auditor ?? 'N/A' %>"
+                            data-asst-auditor="<%= officers.asstAuditor ?? 'N/A' %>"
+                            data-bus-manager="<%= officers.businessManager ?? 'N/A' %>"
+                            data-asst-bus-manager="<%= officers.asstBusManager ?? 'N/A' %>"
+                            data-pio="<%= officers.pio ?? 'N/A' %>"
+                            data-asst-pio="<%= officers.asstPio ?? 'N/A' %>"
+                            data-muse="<%= officers.muse ?? 'N/A' %>"
+                            data-escort="<%= officers.escort ?? 'N/A' %>"
+                            data-directors="<%= JSON.stringify(directors) %>">
+                            
+                            <div> 
+                                <h3 class="card-barangay-name">
+                                    <%= barangay.name ?? 'Barangay Name' %>
+                                </h3>
+                                <div class="president-info">
+                                    <img src="<%= presidentImage %>" alt="President <%= officers.president ?? '' %>" class="president-image">
+                                    <div>
+                                        <span class="label">President</span>
+                                        <span class="name"><%= officers.president ?? 'Not Listed' %></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="view-details-link">
+                                View Leadership Details
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-center text-gray-500 italic">No barangays listed yet.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+      </section>
+    
+    <% } else { %>
+      <section class="py-16 md:py-24 bg-white">
+          <div class="container mx-auto px-4 text-center">
+              <h2 class="text-2xl font-semibold text-red-600">Content Unavailable</h2>
+              <p class="text-gray-600 mt-4">We couldn't load the Barangay Leadership page content.</p>
+          </div>
+      </section>
+    <% } %>
+</main>
+    
+<div id="barangayModalOverlay" class="modal-overlay">
+    <div id="barangayModalContent" class="modal-content">
+        <button id="closeModalBtn" class="modal-close-btn">&times;</button>
+        <h2 id="modalBarangayName" class="text-2xl font-bold mb-4 text-indigo-700 border-b pb-3">Barangay Name</h2>
+        <h3 class="text-lg font-semibold mt-4 mb-3 text-gray-800">Officers</h3>
+        <div id="modalOfficersList">
+            </div>
+        <h3 class="text-lg font-semibold mt-6 mb-3 text-gray-800">Board of Directors</h3>
+        <ul id="modalDirectorsList">
+            <li class="text-gray-500 italic">No directors listed.</li>
+        </ul>
+    </div>
+</div>
+    
+<script>
+    // Modal JavaScript (from your provided EJS, slightly adapted for clarity)
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalOverlay = document.getElementById('barangayModalOverlay');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const barangayListContainer = document.getElementById('barangays-public-section'); // Target the correct section for event delegation
+
+        const modalBarangayName = document.getElementById('modalBarangayName');
+        const modalOfficersList = document.getElementById('modalOfficersList');
+        const modalDirectorsList = document.getElementById('modalDirectorsList');
+    
+        const officerKeys = [
+            { key: 'president', label: 'President' }, { key: 'vp', label: 'Vice President' },
+            { key: 'secretary', label: 'Secretary' }, { key: 'asstSecretary', label: 'Asst. Secretary' },
+            { key: 'treasurer', label: 'Treasurer' }, { key: 'asstTreasurer', label: 'Asst. Treasurer' },
+            { key: 'auditor', label: 'Auditor' }, { key: 'asstAuditor', label: 'Asst. Auditor' },
+            { key: 'busManager', label: 'Business Manager' }, { key: 'asstBusManager', label: 'Asst. Bus. Manager' },
+            { key: 'pio', label: 'P.I.O.' }, { key: 'asstPio', label: 'Asst. P.I.O.' },
+            { key: 'muse', label: 'Muse' }, { key: 'escort', label: 'Escort' }
+        ];
+
+        const openModal = (cardData) => {
+            modalBarangayName.textContent = cardData.barangayName || 'N/A';
+            
+            modalOfficersList.innerHTML = ''; // Clear previous officer list
+            let hasOfficers = false;
+            officerKeys.forEach(officer => {
+                const officerName = cardData[officer.key] || 'N/A';
+                if (officerName !== 'N/A' && officerName.trim() !== '') {
+                    const p = document.createElement('p');
+                    p.innerHTML = `<span class="officer-title">${officer.label}:</span> <span class="officer-name">${officerName}</span>`;
+                    modalOfficersList.appendChild(p);
+                    hasOfficers = true;
+                }
+            });
+            if (!hasOfficers) {
+                 modalOfficersList.innerHTML = '<p class="text-gray-500 italic">No officers listed for these positions.</p>';
+            }
+
+            modalDirectorsList.innerHTML = '';
+            try {
+                const directors = JSON.parse(cardData.directors || '[]');
+                if (directors.length > 0) {
+                    let hasListedDirectors = false;
+                    directors.forEach(dir => {
+                        if ((dir.title && dir.title.trim() !== '') || (dir.name && dir.name.trim() !== '')) {
+                            const li = document.createElement('li');
+                            li.innerHTML = `<strong>${dir.title || 'Position/Purok N/A'}:</strong> <span class="director-name">${dir.name || 'Name N/A'}</span>`;
+                            modalDirectorsList.appendChild(li);
+                            hasListedDirectors = true;
+                        }
+                    });
+                    if (!hasListedDirectors) {
+                       modalDirectorsList.innerHTML = '<li class="text-gray-500 italic bg-transparent border-none p-0">No specific directors listed.</li>';
+                    }
+                } else {
+                    modalDirectorsList.innerHTML = '<li class="text-gray-500 italic bg-transparent border-none p-0">No directors listed.</li>';
+                }
+            } catch (e) {
+                console.error("Error parsing directors JSON:", e);
+                modalDirectorsList.innerHTML = '<li class="text-red-500 italic bg-transparent border-none p-0">Error loading directors list.</li>';
+            }
+    
+            modalOverlay.classList.add('active');
+        };
+    
+        const closeModal = () => {
+            if (modalOverlay) modalOverlay.classList.remove('active');
+        };
+    
+        if (barangayListContainer) {
+            barangayListContainer.addEventListener('click', (e) => {
+                const card = e.target.closest('.barangay-info-card');
+                if (card) {
+                    // Extract all data attributes
+                    const cardData = { ...card.dataset }; // Spread dataset into a new object
+                    openModal(cardData);
+                }
+            });
+        }
+    
+        if (closeModalBtn) { closeModalBtn.addEventListener('click', closeModal); }
+        if (modalOverlay) { 
+            modalOverlay.addEventListener('click', (e) => { 
+                if (e.target === modalOverlay) { closeModal(); } 
+            }); 
+        }
+        document.addEventListener('keydown', (e) => { 
+            if (e.key === 'Escape' && modalOverlay && modalOverlay.classList.contains('active')) { 
+                closeModal(); 
+            } 
+        });
+    });
+</script>
+
+</body>
+</html>

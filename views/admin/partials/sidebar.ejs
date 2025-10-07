@@ -1,0 +1,82 @@
+<%# views/admin/partials/sidebar.ejs %>
+<%# Assumes 'currentPage' variable is passed %>
+<%# Uses Tailwind CSS classes for styling %>
+
+<div class="w-64 bg-gray-800 text-gray-300 flex flex-col flex-shrink-0 h-screen">
+    <%# Header %>
+    <div class="p-4 text-lg font-bold border-b border-gray-700 text-gray-50 flex items-center">
+        <i class="fas fa-tachometer-alt mr-2"></i> Admin Dashboard
+    </div>
+
+    <%# Navigation - takes remaining space and scrolls %>
+    <nav class="flex-1 overflow-y-auto pb-4 admin-nav-scroll"> <%# Keep your custom scroll class %>
+
+        <%# Helper function to generate link classes %>
+        <%
+            const getLinkClasses = (pageName) => {
+                let baseClasses = "flex items-center py-3 px-4 text-gray-300 border-l-4 border-transparent text-sm transition duration-150 ease-in-out hover:bg-gray-700 hover:text-white";
+                let activeClasses = " bg-gray-900 text-white border-indigo-600 font-semibold"; // Active state
+                return baseClasses + (currentPage === pageName ? activeClasses : "");
+            };
+        %>
+
+        <a href="/admin/dashboard" class="<%= getLinkClasses('dashboard') %>">
+            <i class="fas fa-home fa-fw w-6 mr-3"></i> Dashboard
+        </a>
+
+        <a href="/admin/edit-home" class="<%= getLinkClasses('edit-home') %>">
+            <i class="fas fa-edit fa-fw w-6 mr-3"></i> Edit Home Page
+        </a>
+
+        <a href="/admin/edit-logo" class="<%= getLinkClasses('edit-logo') %>">
+            <i class="fas fa-image fa-fw w-6 mr-3"></i> Edit Site Logo
+        </a>
+
+        <a href="/admin/edit-services" class="<%= getLinkClasses('edit-services') %>">
+            <i class="fas fa-concierge-bell fa-fw w-6 mr-3"></i> Edit Services Page
+        </a>
+
+        <a href="/admin/edit-gallery" class="<%= getLinkClasses('edit-gallery') %>">
+            <i class="fas fa-images fa-fw w-6 mr-3"></i> Edit Gallery Page
+        </a>
+
+        <a href="/admin/edit-contact" class="<%= getLinkClasses('edit-contact') %>">
+            <i class="fas fa-envelope fa-fw w-6 mr-3"></i> Edit Contact Page
+        </a>
+
+        <a href="/admin/edit-vision" class="<%= getLinkClasses('edit-vision') %>">
+            <i class="fas fa-eye fa-fw w-6 mr-3"></i> Edit Vision Page
+        </a>
+
+        <a href="/admin/edit-mission" class="<%= getLinkClasses('edit-mission') %>">
+            <i class="fas fa-bullseye fa-fw w-6 mr-3"></i> Edit Mission Page
+        </a>
+
+        <a href="/admin/edit-goals" class="<%= getLinkClasses('edit-goals') %>">
+            <i class="fas fa-flag-checkered fa-fw w-6 mr-3"></i> Edit Goals Page
+        </a>
+
+        <a href="/admin/edit-objectives" class="<%= getLinkClasses('edit-objectives') %>">
+            <i class="fas fa-crosshairs fa-fw w-6 mr-3"></i> Edit Objectives Page
+        </a>
+
+        <a href="/admin/edit-history" class="<%= getLinkClasses('edit-history') %>">
+            <i class="fas fa-history fa-fw w-6 mr-3"></i> Edit History Page
+        </a>
+
+        <a href="/admin/edit-leadership" class="<%= getLinkClasses('edit-leadership') %>">
+            <i class="fas fa-users fa-fw w-6 mr-3"></i> Edit Leadership Page
+        </a>
+
+        <a href="/admin/edit-barangay" class="<%= getLinkClasses('edit-barangay') %>">
+            <i class="fas fa-map-marked-alt fa-fw w-6 mr-3"></i> Edit Barangay Page
+        </a>
+
+        <%# --- Logout Link --- %>
+        <div class="mt-auto pt-4 border-t border-gray-700 mx-4"> <%# Use margin-top: auto to push to bottom %>
+            <a href="/logout" class="flex items-center py-3 px-4 text-gray-300 text-sm transition duration-150 ease-in-out hover:bg-gray-700 hover:text-red-400">
+                <i class="fas fa-sign-out-alt fa-fw w-6 mr-3"></i> Logout
+            </a>
+        </div>
+    </nav>
+</div>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css"> <link rel="stylesheet" href="/css/admin.css"> <style>
+        /* WYSIWYG and common admin styles (can be moved to admin.css) */
+        .wysiwyg-input, .wysiwyg-textarea { background-color: rgba(239, 246, 255, 0.3); border: 1px dashed rgba(0, 0, 0, 0.2); padding: 2px 4px; margin: 0 0 2px 0; display: inline-block; width: auto; min-width: 100px; border-radius: 3px; color: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; vertical-align: baseline; }
+        .wysiwyg-textarea { width: 100%; min-height: 60px; display: block; resize: vertical; }
+        .wysiwyg-file-input-container { border: 1px dashed rgba(0, 0, 0, 0.2); padding: 10px; margin-top: 10px; border-radius: 5px; background-color: rgba(239, 246, 255, 0.3); }
+        .wysiwyg-hero-bg-input-container { background-color: rgba(0,0,0,0.4); /* Darker for hero bg upload */ }
+        .wysiwyg-file-input-container img.preview-image { max-height: 200px; margin-bottom: 5px; border: 1px solid #eee; border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 10px; object-fit: cover; }
+        .wysiwyg-file-input-container img.preview-image-president { max-height: 100px; width: 100px; border-radius: 50%; object-fit: cover;}
+
+        .wysiwyg-file-input { display: inline-block; width: auto; font-size: 0.9em; vertical-align: middle; }
+        .wysiwyg-input:hover, .wysiwyg-textarea:hover, .wysiwyg-file-input-container:hover { border: 1px dashed #4f46e5; background-color: rgba(224, 231, 255, 0.4); }
+        .wysiwyg-file-input::file-selector-button { font-size: 0.8em; padding: 4px 8px; margin-right: 5px; border-radius: 3px; border: 1px solid #ccc; background-color: #f0f0f0; cursor: pointer; }
+        #save-changes-btn { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        
+        .barangay-edit-item, .director-edit-item { border: 1px solid #e5e7eb; background-color: #f9fafb; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem; position: relative; }
+        .remove-item-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: rgba(239, 68, 68, 0.7); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8em; cursor: pointer; border: none; line-height: 0; transition: background-color 0.2s; }
+        .remove-item-btn:hover { background-color: rgba(220, 38, 38, 1); }
+        .add-item-btn { background-color: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: background-color 0.2s; }
+        .add-item-btn:hover { background-color: #059669; }
+        .add-item-container { text-align: center; padding: 1rem 0; border-top: 1px solid #eee; margin-top: 1rem; }
+        label small { font-weight: normal; color: #6b7280; display: block; margin-top: 0.1rem;}
+
+        /* Admin nav scroll (from your leadership edit page) */
+        .admin-nav-scroll { overflow-y: auto; overflow-x: hidden; padding-bottom: 1rem; }
+        .admin-nav-scroll::-webkit-scrollbar { width: 6px; }
+        .admin-nav-scroll::-webkit-scrollbar-track { background: rgba(67, 56, 202, 0.2); border-radius: 10px; }
+        .admin-nav-scroll::-webkit-scrollbar-thumb { background-color: rgba(79, 70, 229, 0.7); border-radius: 10px; border: 1px solid transparent; background-clip: content-box; }
+        .admin-nav-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(67, 56, 202, 1); }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <%- include('partials/sidebar', { currentPage: currentPage }) %>
+
+        <div class="flex-1 overflow-y-auto">
+            <% if (typeof barangayData === 'undefined' || !barangayData) { %>
+                <div class="p-10 bg-red-100 border border-red-400 text-red-700" role="alert">Error loading Barangay Leadership data.</div>
+            <% } else { %>
+                <form action="/admin/edit-barangay" method="POST" enctype="multipart/form-data" id="edit-barangay-form">
+                    <main>
+                        <section id="barangay-hero-admin-preview" class="relative min-h-screen flex items-center justify-center overflow-hidden" style="background-image: url('<%= barangayData.hero?.backgroundImage || '/images/default-barangay-hero.jpg' %>'); background-size: contain; background-position: center; background-repeat: no-repeat;">
+                            <div class="absolute inset-0 bg-black bg-opacity-40 z-10"></div> <div class="container mx-auto px-4 relative z-20 text-center">
+                                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+                                    <input type="text" name="hero.title" value="<%= barangayData.hero?.title ?? 'Barangay Leadership' %>" class="wysiwyg-input text-center text-4xl md:text-5xl lg:text-6xl font-bold text-white bg-white bg-opacity-20 border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 placeholder-gray-300" style="width: 80%;" placeholder="Hero Title">
+                                </h1>
+                                <p class="text-xl md:text-2xl text-white mb-10 max-w-3xl mx-auto">
+                                    <textarea name="hero.subtitle" rows="2" class="wysiwyg-textarea text-center text-xl md:text-2xl text-white bg-white bg-opacity-20 border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 w-full max-w-3xl mx-auto placeholder-gray-300" placeholder="Hero Subtitle"><%= barangayData.hero?.subtitle ?? 'Discover the local leaders...' %></textarea>
+                                </p>
+                                <div class="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-full text-lg font-medium transition transform hover:scale-105 shadow-lg inline-block">
+                                    <input type="text" name="hero.buttonText" value="<%= barangayData.hero?.buttonText ?? 'View Barangays' %>" class="wysiwyg-input bg-transparent border-none text-center p-0 text-lg font-medium text-white placeholder-gray-300" placeholder="Button Text">
+                                </div>
+                                
+                                <div class="mt-8 max-w-md mx-auto">
+                                    <div class="wysiwyg-file-input-container wysiwyg-hero-bg-input-container text-left p-4 rounded">
+                                        <label class="block text-sm font-medium text-gray-200 mb-1" for="heroBarangayBackgroundImageFile">Hero Background Image</label>
+                                        <img id="heroBarangayBgPreviewDisplay" src="<%= barangayData.hero?.backgroundImage || '/images/default-barangay-hero.jpg' %>" alt="Current Hero Background" class="preview-image mb-2">
+                                        <input type="file" id="heroBarangayBackgroundImageFile" name="heroBackgroundImage" accept="image/*" class="wysiwyg-file-input text-gray-300" onchange="previewAdminImage(event, 'heroBarangayBgPreviewDisplay', 'barangay-hero-admin-preview')">
+                                        <p class="mt-1 text-xs text-gray-400 block">Upload new image. If empty, current/default is used.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+                                <a href="#barangay-main-section-admin" class="text-white opacity-70 hover:opacity-100 transition"><i class="fas fa-chevron-down text-2xl"></i></a>
+                            </div>
+                        </section>
+
+                        <section id="barangay-main-section-admin" class="py-16 md:py-24 bg-white">
+                            <div class="container mx-auto px-4">
+                                <div class="text-center mb-12">
+                                    <h2 class="text-3xl md:text-4xl font-bold mb-3">
+                                        <input type="text" name="mainSection.title" value="<%= barangayData.mainSection?.title ?? 'Our Barangays' %>" class="wysiwyg-input text-center text-3xl md:text-4xl font-bold w-full max-w-xl mx-auto" placeholder="Main Section Title">
+                                    </h2>
+                                    <div class="w-20 h-1 bg-indigo-600 mx-auto mb-5"></div>
+                                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                                        <textarea name="mainSection.subtitle" rows="2" class="wysiwyg-textarea text-center text-lg text-gray-600 w-full max-w-2xl mx-auto" placeholder="Main Section Subtitle"><%= barangayData.mainSection?.subtitle ?? 'Information about each Barangay\'s leadership.' %></textarea>
+                                    </p>
+                                </div>
+
+                                <div id="barangays-list-admin" class="space-y-8">
+                                    <% barangayData.mainSection?.barangays?.forEach((barangay, brgyIndex) => { %>
+                                        <div class="barangay-edit-item p-6 shadow-lg rounded-lg">
+                                            <button type="button" class="remove-item-btn remove-barangay-btn" title="Remove Barangay">&times;</button>
+                                            <div class="mb-4">
+                                                <label for="barangay-name-<%= brgyIndex %>" class="block text-sm font-medium text-gray-700">Barangay Name</label>
+                                                <input type="text" id="barangay-name-<%= brgyIndex %>" name="barangays[<%= brgyIndex %>].name" value="<%= barangay.name ?? '' %>" class="wysiwyg-input mt-1 block w-full text-xl font-semibold" placeholder="Enter Barangay Name">
+                                            </div>
+
+                                            <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Officers:</h4>
+                                            
+                                            <div class="mb-4 text-center">
+                                                <img id="presidentImagePreview_<%= brgyIndex %>" src="<%= barangay.officers?.presidentImage || 'https://via.placeholder.com/150/cccccc/888888?text=No+Image' %>" alt="President Image" class="preview-image-president mx-auto mb-2 border border-gray-300">
+                                                <div class="wysiwyg-file-input-container max-w-xs mx-auto">
+                                                    <label for="presidentImageFile_<%= brgyIndex %>" class="block text-xs font-medium text-gray-700 mb-1">President's Image</label>
+                                                    <input type="file" id="presidentImageFile_<%= brgyIndex %>" name="barangays[<%= brgyIndex %>].officers.presidentImageFile" class="wysiwyg-file-input" onchange="previewAdminImage(event, 'presidentImagePreview_<%= brgyIndex %>')">
+                                                    <input type="hidden" name="barangays[<%= brgyIndex %>].officers.presidentImage" value="<%= barangay.officers?.presidentImage || '' %>">
+                                                </div>
+                                            </div>
+
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                                <% const officerFields = [
+                                                    { key: 'president', label: 'President' }, { key: 'vicePresident', label: 'Vice President' },
+                                                    { key: 'secretary', label: 'Secretary' }, { key: 'asstSecretary', label: 'Asst. Secretary' },
+                                                    { key: 'treasurer', label: 'Treasurer' }, { key: 'asstTreasurer', label: 'Asst. Treasurer' },
+                                                    { key: 'auditor', label: 'Auditor' }, { key: 'asstAuditor', label: 'Asst. Auditor' },
+                                                    { key: 'businessManager', label: 'Business Manager' }, { key: 'asstBusManager', label: 'Asst. Bus. Manager' },
+                                                    { key: 'pio', label: 'P.I.O.' }, { key: 'asstPio', label: 'Asst. P.I.O.' },
+                                                    { key: 'muse', label: 'Muse' }, { key: 'escort', label: 'Escort' }
+                                                ]; %>
+                                                <% officerFields.forEach(field => { %>
+                                                    <div>
+                                                        <label for="brgy-<%= brgyIndex %>-officer-<%= field.key %>" class="block text-sm font-medium text-gray-700"><%= field.label %></label>
+                                                        <input type="text" id="brgy-<%= brgyIndex %>-officer-<%= field.key %>" name="barangays[<%= brgyIndex %>].officers.<%= field.key %>" value="<%= barangay.officers?.[field.key] ?? '' %>" class="wysiwyg-input mt-1 block w-full" placeholder="<%= field.label %> Name">
+                                                    </div>
+                                                <% }) %>
+                                            </div>
+
+                                            <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Board of Directors:</h4>
+                                            <div id="directors-container-<%= brgyIndex %>" class="space-y-3">
+                                                <% barangay.officers?.boardOfDirectors?.forEach((director, dirIndex) => { %>
+                                                    <div class="director-edit-item flex items-center gap-3 p-3">
+                                                        <div class="flex-1">
+                                                            <label for="brgy-<%= brgyIndex %>-dir-title-<%= dirIndex %>" class="block text-xs font-medium text-gray-600">Position/Purok</label>
+                                                            <input type="text" id="brgy-<%= brgyIndex %>-dir-title-<%= dirIndex %>" name="barangays[<%= brgyIndex %>].officers.boardOfDirectors[<%= dirIndex %>].title" value="<%= director.title ?? '' %>" class="wysiwyg-input mt-1 block w-full text-sm" placeholder="e.g., Purok Leader">
+                                                        </div>
+                                                        <div class="flex-1">
+                                                            <label for="brgy-<%= brgyIndex %>-dir-name-<%= dirIndex %>" class="block text-xs font-medium text-gray-600">Director's Name</label>
+                                                            <input type="text" id="brgy-<%= brgyIndex %>-dir-name-<%= dirIndex %>" name="barangays[<%= brgyIndex %>].officers.boardOfDirectors[<%= dirIndex %>].name" value="<%= director.name ?? '' %>" class="wysiwyg-input mt-1 block w-full text-sm" placeholder="Director's Full Name">
+                                                        </div>
+                                                        <button type="button" class="remove-item-btn remove-director-btn self-end mb-1" title="Remove Director">&times;</button>
+                                                    </div>
+                                                <% }) %>
+                                            </div>
+                                            <div class="add-item-container pt-3">
+                                                <button type="button" class="add-director-btn add-item-btn text-xs py-1 px-3" data-brgy-index="<%= brgyIndex %>"><i class="fas fa-plus mr-1"></i> Add Director</button>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                                <div class="add-item-container mt-8">
+                                    <button type="button" id="add-barangay-btn" class="add-item-btn text-base py-2 px-5"><i class="fas fa-plus mr-2"></i> Add Barangay</button>
+                                </div>
+                            </div>
+                        </section>
+                    </main>
+
+                    <button type="submit" id="save-changes-btn" class="bg-indigo-600 text-white py-3 px-6 rounded-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition transform hover:scale-105">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+
+<script>
+    // Generic image preview function (can be moved to a global admin script if used on multiple pages)
+    function previewAdminImage(event, previewElementId, backgroundElementId) {
+        const reader = new FileReader();
+        const file = event.target.files[0];
+
+        reader.onload = function() {
+            const outputImg = document.getElementById(previewElementId);
+            if (outputImg) {
+                outputImg.src = reader.result;
+            }
+            if (backgroundElementId) {
+                const bgElement = document.getElementById(backgroundElementId);
+                if (bgElement) {
+                    bgElement.style.backgroundImage = `url('${reader.result}')`;
+                }
+            }
+        };
+
+        if (file) {
+            reader.readAsDataURL(file);
+            // If it's a president image, also update the hidden input for existing path
+            if (event.target.name.includes('presidentImageFile')) {
+                const hiddenInput = event.target.closest('.wysiwyg-file-input-container').querySelector('input[type="hidden"]');
+                if (hiddenInput) hiddenInput.value = ''; // Clear hidden path as new file is chosen
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const barangaysListAdmin = document.getElementById('barangays-list-admin');
+
+        // Function to add a new barangay editing block
+        document.getElementById('add-barangay-btn').addEventListener('click', () => {
+            const brgyIndex = barangaysListAdmin.querySelectorAll('.barangay-edit-item').length;
+            const newBarangayHTML = `
+                <div class="barangay-edit-item p-6 shadow-lg rounded-lg">
+                    <button type="button" class="remove-item-btn remove-barangay-btn" title="Remove Barangay">&times;</button>
+                    <div class="mb-4">
+                        <label for="barangay-name-${brgyIndex}" class="block text-sm font-medium text-gray-700">Barangay Name</label>
+                        <input type="text" id="barangay-name-${brgyIndex}" name="barangays[${brgyIndex}].name" value="" class="wysiwyg-input mt-1 block w-full text-xl font-semibold" placeholder="Enter Barangay Name">
+                    </div>
+                    <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Officers:</h4>
+                    <div class="mb-4 text-center">
+                        <img id="presidentImagePreview_${brgyIndex}" src="https://via.placeholder.com/150/cccccc/888888?text=No+Image" alt="President Image" class="preview-image-president mx-auto mb-2 border border-gray-300">
+                        <div class="wysiwyg-file-input-container max-w-xs mx-auto">
+                            <label for="presidentImageFile_${brgyIndex}" class="block text-xs font-medium text-gray-700 mb-1">President's Image</label>
+                            <input type="file" id="presidentImageFile_${brgyIndex}" name="barangays[${brgyIndex}].officers.presidentImageFile" class="wysiwyg-file-input" onchange="previewAdminImage(event, 'presidentImagePreview_${brgyIndex}')">
+                            <input type="hidden" name="barangays[${brgyIndex}].officers.presidentImage" value="">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        ${['president', 'vicePresident', 'secretary', 'asstSecretary', 'treasurer', 'asstTreasurer', 'auditor', 'asstAuditor', 'businessManager', 'asstBusManager', 'pio', 'asstPio', 'muse', 'escort']
+                            .map(fieldKey => `
+                            <div>
+                                <label for="brgy-${brgyIndex}-officer-${fieldKey}" class="block text-sm font-medium text-gray-700">${fieldKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</label>
+                                <input type="text" id="brgy-${brgyIndex}-officer-${fieldKey}" name="barangays[${brgyIndex}].officers.${fieldKey}" value="" class="wysiwyg-input mt-1 block w-full" placeholder="${fieldKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} Name">
+                            </div>`).join('')}
+                    </div>
+                    <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Board of Directors:</h4>
+                    <div id="directors-container-${brgyIndex}" class="space-y-3">
+                        </div>
+                    <div class="add-item-container pt-3">
+                        <button type="button" class="add-director-btn add-item-btn text-xs py-1 px-3" data-brgy-index="${brgyIndex}"><i class="fas fa-plus mr-1"></i> Add Director</button>
+                    </div>
+                </div>`;
+            barangaysListAdmin.insertAdjacentHTML('beforeend', newBarangayHTML);
+        });
+
+        // Function to add a new director editing block to a specific barangay
+        barangaysListAdmin.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('add-director-btn')) {
+                const brgyIndex = e.target.dataset.brgyIndex;
+                const directorsContainer = document.getElementById(`directors-container-${brgyIndex}`);
+                const dirIndex = directorsContainer.querySelectorAll('.director-edit-item').length;
+                const newDirectorHTML = `
+                    <div class="director-edit-item flex items-center gap-3 p-3">
+                        <div class="flex-1">
+                            <label for="brgy-${brgyIndex}-dir-title-${dirIndex}" class="block text-xs font-medium text-gray-600">Position/Purok</label>
+                            <input type="text" id="brgy-${brgyIndex}-dir-title-${dirIndex}" name="barangays[${brgyIndex}].officers.boardOfDirectors[${dirIndex}].title" value="" class="wysiwyg-input mt-1 block w-full text-sm" placeholder="e.g., Purok Leader">
+                        </div>
+                        <div class="flex-1">
+                            <label for="brgy-${brgyIndex}-dir-name-${dirIndex}" class="block text-xs font-medium text-gray-600">Director's Name</label>
+                            <input type="text" id="brgy-${brgyIndex}-dir-name-${dirIndex}" name="barangays[${brgyIndex}].officers.boardOfDirectors[${dirIndex}].name" value="" class="wysiwyg-input mt-1 block w-full text-sm" placeholder="Director's Full Name">
+                        </div>
+                        <button type="button" class="remove-item-btn remove-director-btn self-end mb-1" title="Remove Director">&times;</button>
+                    </div>`;
+                directorsContainer.insertAdjacentHTML('beforeend', newDirectorHTML);
+            }
+            // Handle removal of barangay or director
+            if (e.target && e.target.classList.contains('remove-barangay-btn')) {
+                if (confirm('Are you sure you want to remove this entire barangay?')) {
+                    e.target.closest('.barangay-edit-item').remove();
+                    // Renumbering barangays after removal is complex and error-prone with dynamic additions.
+                    // The backend should handle potentially sparse arrays or re-index upon saving if strict sequential indices are required.
+                    // For simplicity, this client-side script won't re-index here.
+                }
+            }
+            if (e.target && e.target.classList.contains('remove-director-btn')) {
+                 if (confirm('Are you sure you want to remove this director?')) {
+                    e.target.closest('.director-edit-item').remove();
+                    // Similar to barangays, re-indexing directors client-side after removal is tricky.
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

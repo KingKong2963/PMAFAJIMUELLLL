@@ -1,0 +1,420 @@
+<%- include('partials/header') %>
+<style>
+  .images-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  .story-image {
+    width: 100%;
+    height: 16rem;
+    object-fit: cover; /* Changed to cover for better look without stretching */
+  }
+  #gallery-hero > div:first-child {
+    background-size: contain; /* No zoom */
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #imageModal {
+    display: none; /* Use display none instead of hidden for compatibility */
+  }
+  .max-w-90\% {
+    max-width: 90%;
+  }
+  .max-h-90\% {
+    max-height: 90%;
+  }
+</style>
+<main>
+  <%# Check if galleryData exists before trying to use it %>
+  <% if (typeof galleryData !== 'undefined' && galleryData) { %>
+
+    <!-- Hero Section -->
+    <section id="gallery-hero" class="relative h-screen flex items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat text-white" style="background-image: url('<%= galleryData.hero?.backgroundImage ?? '/images/gallery-hero.jpg' %>'); background-size: contain; background-position: center;">
+      <div class="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-indigo-900/60 z-10"></div>
+      <div class="container mx-auto px-4 relative z-20 text-center max-w-6xl">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in text-shadow-lg drop-shadow-2xl" style="text-shadow: 2px 4px 8px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.3);">
+          <%= galleryData.hero?.title ?? 'Our Gallery' %>
+        </h1>
+        <p class="text-xl md:text-2xl max-w-4xl mx-auto animate-slide-up leading-relaxed text-shadow-md drop-shadow-lg" style="text-shadow: 1px 2px 4px rgba(0,0,0,0.6);">
+          <%= galleryData.hero?.subtitle ?? 'Default subtitle.' %>
+        </p>
+      </div>
+      <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <a href="#gallery" class="text-white opacity-70 hover:opacity-100 transition">
+          <i class="fas fa-chevron-down text-2xl"></i>
+        </a>
+      </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="py-20 md:py-24 bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-100 relative overflow-hidden">
+      <!-- Decorative background elements -->
+      <div class="absolute inset-0 opacity-20 z-[-1]">
+        <div class="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div class="absolute top-0 -right-4 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+      </div>
+      <!-- Geometric stripes -->
+      <div class="absolute inset-0 opacity-5 z-[-1]">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 via-blue-500 to-purple-500 transform -skew-y-1"></div>
+        <div class="absolute top-16 left-0 w-full h-1 bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 transform skew-y-1"></div>
+        <div class="absolute bottom-16 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 transform -skew-y-1"></div>
+        <div class="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-blue-400 to-purple-400 transform skew-y-1"></div>
+      </div>
+      <div class="container mx-auto px-4 relative z-10 max-w-6xl">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-6">
+            <i class="fas fa-images text-2xl text-indigo-600"></i>
+          </div>
+          <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+            <%= galleryData.gallerySection?.title ?? 'Moments That Matter' %>
+          </h2>
+          <div class="w-24 h-1 bg-gradient-to-r from-indigo-500 to-blue-500 mx-auto mb-6 rounded-full"></div>
+          <p class="text-xl text-gray-600 max-w-3xl mx-auto"><%= galleryData.gallerySection?.subtitle ?? 'Default description.' %></p>
+        </div>
+
+        <div id="gallery-grid" class="gallery-grid">
+          <% if (galleryData.gallerySection?.items && galleryData.gallerySection.items.length > 0) { %>
+            <!-- All items grid for 'All' filter -->
+            <div id="all-items-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <% galleryData.gallerySection.items.forEach((item, index) => { %>
+                <div class="gallery-item group <%= item.category %> <%= item.subcategory || 'no-subcategory' %> relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer" data-category="<%= item.category %>" data-subcategory="<%= item.subcategory || '' %>" data-index="<%= index %>">
+                  <img src="<%= item.image ?? '/images/placeholder-gallery.jpg' %>" alt="<%= item.title ?? 'Gallery image' %>" class="w-full h-72 object-cover transition-transform duration-300 transform group-hover:scale-105">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                    <h3 class="text-white text-lg font-semibold mb-1"><%= item.title ?? 'Image Title' %></h3>
+                    <p class="text-gray-200 text-sm mb-1 capitalize"><%= item.category %> <% if (item.subcategory) { %> / <%= item.subcategory %> <% } %></p>
+                    <p class="text-gray-200 text-sm mb-2"><%= item.description ?? 'Description' %></p>
+                    <div class="text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                      <button class="gallery-open bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-indigo-700 transition">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+            <!-- Subcategory sections will be dynamically added here -->
+            <div id="subcategory-sections" class="hidden"></div>
+          <% } else { %>
+            <p class="text-gray-500 italic col-span-full text-center">The gallery is currently empty.</p>
+          <% } %>
+        </div>
+      </div>
+    </section>
+
+  <% } else { %>
+    <section class="py-20 md:py-24 bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-100 relative overflow-hidden">
+      <div class="container mx-auto px-4 text-center relative z-10">
+        <h2 class="text-2xl font-semibold text-red-600">Gallery Content Unavailable</h2>
+        <p class="text-gray-600 mt-4">We couldn't load the gallery content at this time. Please try again later.</p>
+      </div>
+    </section>
+  <% } %>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-12 border-t-4 border-indigo-500">
+  <div class="container mx-auto text-center px-4">
+    <div class="mb-6">
+      <h3 class="text-2xl font-bold mb-2">PMAFA</h3>
+      <p class="text-gray-300">Committed to Community Excellence</p>
+    </div>
+    <div class="border-t border-gray-700 pt-6">
+      <% if (typeof galleryData !== 'undefined' && galleryData && galleryData.footer) { %>
+        <p class="text-gray-400"><%= galleryData.footer.copyright %></p>
+      <% } else { %>
+        <p class="text-gray-400">© Default Copyright</p>
+      <% } %>
+    </div>
+  </div>
+</footer>
+
+<div id="gallery-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden" onclick="closeModal(event)">
+  <div class="bg-white rounded-lg max-w-4xl w-full mx-4 p-6 relative" onclick="event.stopPropagation();">
+    <span class="absolute top-4 right-4 text-gray-600 text-3xl cursor-pointer hover:text-gray-800" onclick="closeModal()"><i class="fas fa-times"></i></span>
+    <button class="absolute left-4 text-gray-600 text-4xl" onclick="prevImage()">&lt;</button>
+    <img id="modal-image" src="" alt="Gallery Image" class="w-full h-auto max-h-[60vh] object-contain rounded-md mb-4 max-w-90% max-h-90%">
+    <button class="absolute right-4 text-gray-600 text-4xl" onclick="nextImage()">&gt;</button>
+    <h3 id="modal-title" class="text-xl font-semibold mb-2"></h3>
+    <p id="modal-category" class="text-sm text-gray-600 capitalize mb-2"></p>
+    <p id="modal-description" class="text-gray-600"></p>
+  </div>
+</div>
+
+<style>
+  .horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Firefox */
+  }
+  .horizontal-scroll::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+  .horizontal-scroll .gallery-item {
+    flex: 0 0 auto;
+    width: 300px;
+    height: 300px;
+    scroll-snap-align: start;
+  }
+  .subcategory-section {
+    margin-bottom: 2rem;
+  }
+  .subcategory-section h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+  }
+
+  /* Custom animations */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 1s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 1s ease-out 0.3s both;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-bounce {
+    animation: bounce 2s infinite;
+  }
+
+  .animation-delay-1000 {
+    animation-delay: 1s;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  /* Enhanced text shadows for hero */
+  .text-shadow-lg {
+    text-shadow: 2px 4px 8px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.3);
+  }
+
+  .text-shadow-md {
+    text-shadow: 1px 2px 4px rgba(0,0,0,0.6);
+  }
+
+  /* Smooth hover transitions */
+  .hover\:shadow-2xl:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Hero background fix - FULL HEIGHT, NO ZOOM */
+  #gallery-hero {
+    background-attachment: scroll !important;
+    background-size: contain !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-color: #f8fafc; /* Light background color to fill empty space */
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const galleryDataForJs = <%- typeof galleryData !== 'undefined' && galleryData ? JSON.stringify(galleryData.gallerySection?.items || []) : '[]' %>;
+    const categoriesForJs = <%- typeof galleryData !== 'undefined' && galleryData ? JSON.stringify(galleryData.gallerySection?.categories || []) : '[]' %>;
+    const galleryGrid = document.querySelector('.gallery-grid');
+    const allItemsGrid = document.getElementById('all-items-grid');
+    const subcategorySections = document.getElementById('subcategory-sections');
+    const filterButtons = document.querySelectorAll('.gallery-filter');
+    let currentCategory = 'all';
+
+    // Modal functionality
+    const modal = document.getElementById('gallery-modal');
+    if (modal) {
+      const modalImage = document.getElementById('modal-image');
+      const modalTitle = document.getElementById('modal-title');
+      const modalCategory = document.getElementById('modal-category');
+      const modalDescription = document.getElementById('modal-description');
+      let currentIndex = 0;
+
+      function openModal(index) {
+        if (!galleryDataForJs || index < 0 || index >= galleryDataForJs.length || !modalImage || !modalTitle || !modalDescription) return;
+        currentIndex = index;
+        const item = galleryDataForJs[index];
+        modalImage.src = item.image || '/images/placeholder-gallery.jpg';
+        modalTitle.textContent = item.title || 'Image Title';
+        modalCategory.textContent = item.category + (item.subcategory ? ' / ' + item.subcategory : '');
+        modalDescription.textContent = item.description || 'Description';
+        modal.style.display = 'flex';
+      }
+
+      function closeModal(event) {
+        if (event && event.target !== modal) return;
+        modal.style.display = 'none';
+        currentIndex = 0;
+      }
+
+      function prevImage() {
+        openModal((currentIndex - 1 + galleryDataForJs.length) % galleryDataForJs.length);
+      }
+
+      function nextImage() {
+        openModal((currentIndex + 1) % galleryDataForJs.length);
+      }
+
+      function attachModalListeners() {
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        galleryItems.forEach((item) => {
+          item.addEventListener('click', (e) => {
+            openModal(parseInt(item.dataset.index));
+          });
+        });
+      }
+
+      attachModalListeners();
+    }
+
+    // Filter and subcategory display functionality
+    function renderSubcategorySections(category) {
+      subcategorySections.innerHTML = '';
+      allItemsGrid.classList.add('hidden');
+      subcategorySections.classList.add('hidden');
+
+      if (category === 'all') {
+        allItemsGrid.classList.remove('hidden');
+        return;
+      }
+
+      const categoryData = categoriesForJs.find(c => c.name === category);
+      if (!categoryData || !categoryData.subcategories || categoryData.subcategories.length === 0) {
+        // If no subcategories, show all items for the category in a grid
+        allItemsGrid.classList.remove('hidden');
+        const items = document.querySelectorAll('.gallery-item');
+        items.forEach(item => {
+          item.style.display = item.dataset.category === category ? 'block' : 'none';
+        });
+        return;
+      }
+
+      subcategorySections.classList.remove('hidden');
+      const itemsBySubcategory = {};
+      galleryDataForJs.forEach((item, index) => {
+        if (item.category === category) {
+          const subcat = item.subcategory || 'no-subcategory';
+          if (!itemsBySubcategory[subcat]) {
+            itemsBySubcategory[subcat] = [];
+          }
+          itemsBySubcategory[subcat].push({ ...item, index });
+        }
+      });
+
+      categoryData.subcategories.forEach(subcat => {
+        if (itemsBySubcategory[subcat] && itemsBySubcategory[subcat].length > 0) {
+          const section = document.createElement('div');
+          section.className = 'subcategory-section';
+          section.innerHTML = `
+            <h2 class="capitalize">${subcat}</h2>
+            <div class="horizontal-scroll">
+              ${itemsBySubcategory[subcat].map(item => `
+                <div class="gallery-item group ${item.category} ${item.subcategory || 'no-subcategory'} relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer" data-category="${item.category}" data-subcategory="${item.subcategory || ''}" data-index="${item.index}">
+                  <img src="${item.image || '/images/placeholder-gallery.jpg'}" alt="${item.title || 'Gallery image'}" class="w-full h-full object-cover transition-transform duration-300 transform group-hover:scale-105">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                    <h3 class="text-white text-lg font-semibold mb-1">${item.title || 'Image Title'}</h3>
+                    <p class="text-gray-200 text-sm mb-1 capitalize">${item.category}${item.subcategory ? ' / ' + item.subcategory : ''}</p>
+                    <p class="text-gray-200 text-sm mb-2">${item.description || 'Description'}</p>
+                    <div class="text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                      <button class="gallery-open bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-indigo-700 transition">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          subcategorySections.appendChild(section);
+        }
+      });
+
+      // Handle items without a subcategory
+      if (itemsBySubcategory['no-subcategory'] && itemsBySubcategory['no-subcategory'].length > 0) {
+        const section = document.createElement('div');
+        section.className = 'subcategory-section';
+        section.innerHTML = `
+          <h2 class="capitalize">Other</h2>
+          <div class="horizontal-scroll">
+            ${itemsBySubcategory['no-subcategory'].map(item => `
+              <div class="gallery-item group ${item.category} no-subcategory relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer" data-category="${item.category}" data-subcategory="" data-index="${item.index}">
+                <img src="${item.image || '/images/placeholder-gallery.jpg'}" alt="${item.title || 'Gallery image'}" class="w-full h-full object-cover transition-transform duration-300 transform group-hover:scale-105">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                  <h3 class="text-white text-lg font-semibold mb-1">${item.title || 'Image Title'}</h3>
+                  <p class="text-gray-200 text-sm mb-1 capitalize">${item.category}</p>
+                  <p class="text-gray-200 text-sm mb-2">${item.description || 'Description'}</p>
+                  <div class="text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                    <button class="gallery-open bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-indigo-700 transition">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        subcategorySections.appendChild(section);
+      }
+
+      attachModalListeners();
+    }
+
+    if (filterButtons.length > 0 && galleryGrid) {
+      filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          filterButtons.forEach(btn => {
+            btn.classList.remove('active', 'bg-indigo-600', 'text-white');
+            btn.classList.add('bg-indigo-100', 'text-indigo-700');
+          });
+          button.classList.add('active', 'bg-indigo-600', 'text-white');
+          button.classList.remove('bg-indigo-100', 'text-indigo-700');
+
+          currentCategory = button.dataset.category;
+          renderSubcategorySections(currentCategory);
+        });
+      });
+
+      // Initialize with 'all' filter
+      const allButton = document.querySelector('.gallery-filter[data-category="all"]');
+      if (allButton) {
+        allButton.classList.add('active', 'bg-indigo-600', 'text-white');
+        allButton.classList.remove('bg-indigo-100', 'text-indigo-700');
+        renderSubcategorySections('all');
+      }
+    }
+  });
+</script>
+</body>
+</html>

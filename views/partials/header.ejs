@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passinhon Migration and Families Association</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <% if (typeof isHome !== 'undefined' && isHome) { %>
+    <link rel="stylesheet" href="/css/home.css">
+  <% } %>
+  <% if (typeof isAbout !== 'undefined' && isAbout) { %>
+    <link rel="stylesheet" href="/css/about.css">
+  <% } %>
+  <% if (typeof isServices !== 'undefined' && isServices) { %>
+    <link rel="stylesheet" href="/css/services.css">
+  <% } %>
+  <% if (typeof isGallery !== 'undefined' && isGallery) { %>
+    <link rel="stylesheet" href="/css/gallery.css">
+  <% } %>
+  <style>
+    /* Custom animations */
+    .animate-slide-up {
+      opacity: 0;
+      transform: translateY(10px);
+      animation: slideUp 0.5s ease-in-out forwards;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    /* Dropdown styles */
+    .dropdown-menu {
+      display: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .dropdown-active {
+      display: block !important;
+    }
+    /* Mobile menu */
+    .mobile-menu {
+      transition: all 0.3s ease;
+    }
+    /* Enhanced navigation styles */
+    nav a, .dropdown-toggle {
+      position: relative;
+      transition: all 0.3s ease;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+    nav a:hover, .dropdown-toggle:hover {
+      color: #ffffff;
+      background-color: #6366f1;
+    }
+    /* Active navigation highlight */
+    .nav-active {
+      color: #ffffff !important;
+      background-color: #4f46e5 !important;
+      font-weight: 600;
+    }
+    /* Ensure logo-link has consistent color and no highlight */
+    .logo-link {
+      color: #4f46e5 !important;
+    }
+    .logo-link:hover {
+      color: #4f46e5 !important;
+      background-color: transparent !important;
+    }
+    .logo-link.nav-active {
+      color: #4f46e5 !important;
+      background-color: transparent !important;
+      font-weight: bold !important;
+    }
+    /* Dropdown menu items */
+    .dropdown-menu a {
+      transition: background-color 0.2s ease;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+    .dropdown-menu a:hover {
+      background-color: #eef2ff;
+    }
+    .dropdown-menu a.nav-active {
+      color: #ffffff;
+      background-color: #4f46e5;
+    }
+    /* Mobile menu links */
+    .mobile-menu a, .mobile-menu .dropdown-toggle {
+      transition: all 0.3s ease;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+    .mobile-menu a:hover, .mobile-menu .dropdown-toggle:hover {
+      color: #ffffff;
+      background-color: #6366f1;
+    }
+    .mobile-menu a.nav-active, .mobile-menu .dropdown-toggle.nav-active {
+      color: #ffffff;
+      background-color: #4f46e5;
+    }
+  </style>
+</head>
+<body class="font-sans text-gray-800 bg-gray-50">
+  <header class="fixed w-full z-50 transition-all duration-300 bg-white bg-opacity-95 shadow-md">
+    <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="/" class="logo-link text-2xl font-bold flex items-center">
+        <img src="<%= locals.siteLogo ?? '/images/default-logo.png' %>" alt="PMAFA Logo" class="h-8 md:h-9 w-auto mr-2">
+        PMAFA
+      </a>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex justify-center flex-grow space-x-8">
+        <a href="/" class="text-gray-700 hover:text-indigo-600 transition">Home</a>
+        <div class="dropdown">
+          <button class="dropdown-toggle text-gray-700 hover:text-indigo-600 transition focus:outline-none">
+            About <i class="fas fa-chevron-down text-xs ml-1"></i>
+          </button>
+          <div class="dropdown-menu bg-white text-gray-800 rounded-lg shadow-lg mt-2 p-2">
+            <a href="/about/vmgo" class="block px-4 py-2 hover:bg-indigo-50 rounded transition animate-slide-up">V.M.G.O</a>
+            <a href="/about/history" class="block px-4 py-2 hover:bg-indigo-50 rounded transition animate-slide-up" style="animation-delay: 0.1s;">History</a>
+            <div class="submenu">
+              <button class="dropdown-toggle block w-full text-left px-4 py-2 text-gray-700 hover:bg-indigo-50 rounded transition animate-slide-up" style="animation-delay: 0.2s;">
+                Administration <i class="fas fa-chevron-right text-xs ml-1"></i>
+              </button>
+              <div class="dropdown-menu bg-white text-gray-800 rounded-lg shadow-lg p-2">
+                <a href="/about/leadership" class="block px-4 py-2 hover:bg-indigo-50 rounded transition animate-slide-up">Main</a>
+                <a href="/administration/barangay-leadership" class="block px-4 py-2 hover:bg-indigo-50 rounded transition animate-slide-up" style="animation-delay: 0.1s;">Per Barangay</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="/services" class="text-gray-700 hover:text-indigo-600 transition">Services</a>
+        <a href="/gallery" class="text-gray-700 hover:text-indigo-600 transition">Gallery</a>
+        <a href="/contact" class="text-gray-700 hover:text-indigo-600 transition">Contact</a>
+      </div>
+
+      <!-- Mobile Navigation Toggle -->
+      <button id="mobile-toggle" class="md:hidden text-gray-700 focus:outline-none">
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+    </nav>
+
+    <!-- Mobile Menu (Hidden by default) -->
+    <div id="mobile-menu" class="mobile-menu hidden md:hidden px-4 py-3 bg-white shadow-inner">
+      <div class="flex flex-col space-y-3 items-center">
+        <a href="/" class="text-gray-700 hover:text-indigo-600 transition py-2">Home</a>
+        <div class="dropdown w-full text-center">
+          <button class="dropdown-toggle flex justify-between items-center w-full text-gray-700 hover:text-indigo-600 transition py-2">
+            <span>About</span>
+            <i class="fas fa-chevron-down text-xs"></i>
+          </button>
+          <div class="dropdown-menu">
+            <a href="/about/vmgo" class="block px-4 py-2 hover:bg-indigo-50 rounded transition">V.M.G.O</a>
+            <a href="/about/history" class="block px-4 py-2 hover:bg-indigo-50 rounded transition">History</a>
+            <div class="submenu">
+              <button class="dropdown-toggle flex justify-between items-center w-full px-4 py-2 text-gray-700 hover:bg-indigo-50 rounded transition">
+                <span>Administration</span>
+                <i class="fas fa-chevron-right text-xs"></i>
+              </button>
+              <div class="dropdown-menu">
+                <a href="/about/leadership" class="block px-4 py-2 hover:bg-indigo-50 rounded transition">Main</a>
+                <a href="/administration/barangay-leadership" class="block px-4 py-2 hover:bg-indigo-50 rounded transition">Per Barangay</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="/services" class="text-gray-700 hover:text-indigo-600 transition py-2">Services</a>
+        <a href="/gallery" class="text-gray-700 hover:text-indigo-600 transition py-2">Gallery</a>
+        <a href="/contact" class="text-gray-700 hover:text-indigo-600 transition py-2">Contact</a>
+      </div>
+    </div>
+  </header>
+  <script src="/js/nav.js"></script>
+  <script src="/js/mobile-nav.js"></script>
+  <script>
+    // JavaScript for navigation active state
+    document.addEventListener('DOMContentLoaded', function () {
+      const navLinks = document.querySelectorAll('nav a, .dropdown-menu a');
+      navLinks.forEach(link => {
+        link.addEventListener('click', function () {
+          // Remove active class from all links
+          navLinks.forEach(l => l.classList.remove('nav-active'));
+          // Add active class to clicked link
+          this.classList.add('nav-active');
+        });
+      });
+
+      // Highlight current page on load
+      const currentPath = window.location.pathname;
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+          link.classList.add('nav-active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

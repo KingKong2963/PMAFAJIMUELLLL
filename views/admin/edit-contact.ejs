@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/contact.css"> <style>
+        .wysiwyg-input, .wysiwyg-textarea { background-color: rgba(239, 246, 255, 0.3); border: 1px dashed rgba(0, 0, 0, 0.2); padding: 2px 4px; margin: 0 0 2px 0; display: inline-block; width: auto; min-width: 100px; border-radius: 3px; color: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; vertical-align: baseline; }
+        .wysiwyg-textarea { width: 100%; min-height: 60px; display: block; resize: vertical; }
+        .wysiwyg-file-input-container { border: 1px dashed rgba(0, 0, 0, 0.2); padding: 10px; margin-top: 10px; border-radius: 5px; background-color: rgba(239, 246, 255, 0.3); }
+        .wysiwyg-file-input-container img.preview-image { max-height: 150px; margin-bottom: 5px; border: 1px solid #eee; border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 10px; }
+        .wysiwyg-file-input { display: inline-block; width: auto; font-size: 0.9em; vertical-align: middle; }
+        .wysiwyg-input:hover, .wysiwyg-textarea:hover, .wysiwyg-file-input-container:hover { border: 1px dashed #4f46e5; background-color: rgba(224, 231, 255, 0.4); }
+        .wysiwyg-file-input::file-selector-button { font-size: 0.8em; padding: 4px 8px; margin-right: 5px; border-radius: 3px; border: 1px solid #ccc; background-color: #f0f0f0; cursor: pointer; }
+        #save-changes-btn { position: fixed; bottom: 20px; right: 20px; z-index: 100; }
+        iframe { min-height: 300px; }
+        .admin-nav-scroll { overflow-y: auto; overflow-x: hidden; padding-bottom: 1rem; }
+        .admin-nav-scroll::-webkit-scrollbar { width: 6px; }
+        .admin-nav-scroll::-webkit-scrollbar-track { background: rgba(67, 56, 202, 0.2); border-radius: 10px; }
+        .admin-nav-scroll::-webkit-scrollbar-thumb { background-color: rgba(79, 70, 229, 0.7); border-radius: 10px; border: 1px solid transparent; background-clip: content-box; }
+        .admin-nav-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(67, 56, 202, 1); }
+
+        /* Added for admin hero preview */
+        #contact-hero-admin-preview-wrapper {
+            
+             background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* The hero-gradient from contact.css might be applied if not overridden */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <%- include('partials/sidebar', { currentPage: currentPage }) %>
+        <div class="flex-1 overflow-y-auto">
+            <% if (typeof contactData === 'undefined' || !contactData) { %>
+                <div class="p-10 bg-red-100 border border-red-400 text-red-700" role="alert">Error loading contact data.</div>
+            <% } else { %>
+                <form action="/admin/edit-contact" method="POST" enctype="multipart/form-data" id="edit-contact-form">
+                    <main>
+                        <section id="contact-hero-admin-preview-wrapper" class="relative min-h-screen flex items-center justify-center overflow-hidden hero-gradient" style="background-image: url('<%= contactData.hero?.backgroundImage || '/images/default-contact-hero.jpg' %>');">
+                            <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+                            <div class="container mx-auto px-4 relative z-10 text-center">
+                                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4"> <input type="text" name="hero.title" value="<%= contactData.hero?.title ?? '' %>" class="wysiwyg-input text-center text-4xl md:text-5xl lg:text-6xl font-bold text-white bg-white bg-opacity-20 border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 placeholder-gray-300" style="width: 80%;" placeholder="Hero Title">
+                                </h1>
+                                <p class="text-xl md:text-2xl text-white mb-10 max-w-3xl mx-auto"> <textarea name="hero.subtitle" rows="2" class="wysiwyg-textarea text-center text-xl md:text-2xl text-white bg-white bg-opacity-20 border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 w-full max-w-3xl mx-auto placeholder-gray-300" placeholder="Hero Subtitle"><%= contactData.hero?.subtitle ?? '' %></textarea>
+                                </p>
+                                <div class="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-full text-lg font-medium transition transform hover:scale-105 shadow-lg inline-block">
+                                    <input type="text" name="hero.buttonText" value="<%= contactData.hero?.buttonText ?? '' %>" class="wysiwyg-input bg-transparent border-none text-center p-0 text-lg font-medium text-white placeholder-gray-300" placeholder="Button Text">
+                                </div>
+
+                                <div class="mt-8 max-w-md mx-auto wysiwyg-file-input-container bg-white bg-opacity-20 p-4 rounded">
+                                    <label for="heroBackgroundImageFile" class="block text-sm font-medium text-white mb-1">Hero Background Image</label>
+                                    <img id="heroBgPreview" src="<%= contactData.hero?.backgroundImage || '/images/default-contact-hero.jpg' %>" alt="Current Hero BG" class="preview-image mb-2">
+                                    <input type="file" name="heroBackgroundImage" id="heroBackgroundImageFile" class="wysiwyg-file-input text-white" onchange="previewAdminImage(event, 'heroBgPreview', 'contact-hero-admin-preview-wrapper')">
+                                    <p class="text-xs text-gray-200 mt-1">Upload a new image. If empty, current/default is used.</p>
+                                </div>
+                            </div>
+                             <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+                                <a href="#contact-form-display-admin" class="text-white opacity-70 hover:opacity-100 transition"><i class="fas fa-chevron-down text-2xl"></i></a>
+                            </div>
+                        </section>
+
+                        <section id="contact-form-display-admin" class="py-16 md:py-24 bg-white">
+                            <div class="container mx-auto px-4">
+                                <div class="text-center mb-16">
+                                    <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                                        <input type="text" name="formSection.title" value="<%= contactData.formSection?.title ?? '' %>" class="wysiwyg-input text-center text-3xl md:text-4xl font-bold" placeholder="Form Section Title">
+                                    </h2>
+                                    <div class="w-24 h-1 bg-indigo-600 mx-auto mb-6"></div>
+                                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                                        <textarea name="formSection.subtitle" rows="2" class="wysiwyg-textarea text-center text-lg text-gray-600 w-full max-w-3xl mx-auto" placeholder="Form Section Subtitle"><%= contactData.formSection?.subtitle ?? '' %></textarea>
+                                    </p>
+                                    <div class="mt-6 max-w-md mx-auto">
+                                        <label for="formRecipientEmail" class="block text-sm font-medium text-gray-700">Contact Form Recipient Email</label>
+                                        <input type="email" id="formRecipientEmail" name="formSection.formRecipientEmail" value="<%= contactData.formSection?.formRecipientEmail ?? '' %>" class="wysiwyg-input w-full mt-1 border border-gray-300 p-2 rounded text-center text-gray-600" placeholder="e.g., contact@example.com">
+                                        <p class="text-xs text-gray-500 mt-1">Enter the Gmail address where contact form submissions will be sent.</p>
+                                    </div>
+                                </div>
+                                <div class="max-w-2xl mx-auto bg-gray-100 border border-dashed border-gray-400 p-8 rounded-xl shadow-inner text-center">
+                                    <p class="text-gray-600 italic">The contact form itself appears here on the live site.</p>
+                                    <p class="text-sm text-gray-500 mt-2">(Form fields like Name, Email, Message are not edited here - they are for user input only).</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="py-16 md:py-24 bg-gray-50">
+                            <div class="container mx-auto px-4">
+                                <div class="text-center mb-16">
+                                    <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                                        <input type="text" name="infoSection.title" value="<%= contactData.infoSection?.title ?? '' %>" class="wysiwyg-input text-center text-3xl md:text-4xl font-bold" placeholder="Info Section Title">
+                                    </h2>
+                                    <div class="w-24 h-1 bg-indigo-600 mx-auto mb-6"></div>
+                                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                                        <textarea name="infoSection.subtitle" rows="2" class="wysiwyg-textarea text-center text-lg text-gray-600 w-full max-w-3xl mx-auto" placeholder="Info Section Subtitle"><%= contactData.infoSection?.subtitle ?? '' %></textarea>
+                                    </p>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                                        <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="<%= contactData.infoSection?.address?.icon ?? 'fas fa-map-marker-alt' %> text-indigo-600 text-2xl"></i>
+                                        </div>
+                                        <h3 class="text-xl font-semibold mb-2">Visit Us</h3>
+                                        <p class="text-gray-600 whitespace-pre-line">
+                                            <textarea name="infoSection.address.lines" rows="3" class="wysiwyg-textarea text-center text-gray-600 w-full" placeholder="Address Line 1&#10;Address Line 2"><%= contactData.infoSection?.address?.lines ?? '' %></textarea>
+                                        </p>
+                                    </div>
+                                    <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                                        <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="<%= contactData.infoSection?.phone?.icon ?? 'fas fa-phone-alt' %> text-indigo-600 text-2xl"></i>
+                                        </div>
+                                        <h3 class="text-xl font-semibold mb-2">Call Us</h3>
+                                        <p class="text-gray-600">
+                                            <input type="tel" name="infoSection.phone.number" value="<%= contactData.infoSection?.phone?.number ?? '' %>" class="wysiwyg-input text-center text-gray-600" placeholder="(555) 123-4567">
+                                        </p>
+                                    </div>
+                                    <div class="bg-white p-6 rounded-xl shadow-md text-center">
+                                        <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="<%= contactData.infoSection?.email?.icon ?? 'fas fa-envelope' %> text-indigo-600 text-2xl"></i>
+                                        </div>
+                                        <h3 class="text-xl font-semibold mb-2">Email Us</h3>
+                                        <p class="text-gray-600">
+                                            <input type="email" name="infoSection.email.address" value="<%= contactData.infoSection?.email?.address ?? '' %>" class="wysiwyg-input text-center text-gray-600" placeholder="email@example.com">
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="mt-12 max-w-4xl mx-auto">
+                                    <h3 class="text-xl font-semibold mb-4 text-center">Map Embed</h3>
+                                    <div class="bg-white p-6 rounded-xl shadow-md">
+                                        <label class="block text-sm font-medium text-gray-700" for="mapEmbedUrlInputAdmin">Google Maps Embed URL (src only)</label>
+                                        <textarea id="mapEmbedUrlInputAdmin" name="infoSection.mapEmbedUrl" rows="3" class="wysiwyg-textarea w-full mt-1 border border-gray-300 p-2 rounded" placeholder="Paste only the URL from the src attribute of the iframe embed code." oninput="updateAdminMapPreview()"><%= contactData.infoSection?.mapEmbedUrl ?? '' %></textarea>
+                                        <p class="text-xs text-gray-500 mt-1">Example: https://www.google.com/maps/embed?pb=...</p>
+                                        <h4 class="text-md font-medium mt-4 mb-2">Map Preview:</h4>
+                                        <div class="bg-gray-200 h-64 rounded-lg overflow-hidden border border-gray-300">
+                                            <iframe id="mapPreviewFrameAdmin" src="<%= contactData.infoSection?.mapEmbedUrl && contactData.infoSection.mapEmbedUrl.startsWith('https://') ? contactData.infoSection.mapEmbedUrl : '' %>" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                                            <div id="mapPlaceholderAdmin" class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-500 <%= contactData.infoSection?.mapEmbedUrl && contactData.infoSection.mapEmbedUrl.startsWith('https://') ? 'hidden' : '' %>">Map preview requires a valid https embed URL.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <footer class="bg-gray-900 text-white">
+                            <div class="mt-12 border-t border-gray-800 pt-8 pb-8 text-center">
+                                <p class="text-gray-400">
+                                    <input type="text" name="footer.copyright" value="<%= contactData.footer?.copyright ?? `© ${new Date().getFullYear()} PMAFA Contact. All rights reserved.` %>" class="wysiwyg-input text-center text-gray-400 bg-transparent border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 w-3/4" placeholder="Copyright text">
+                                </p>
+                            </div>
+                        </footer>
+                    </main>
+
+                    <button type="submit" id="save-changes-btn" class="bg-indigo-600 text-white py-3 px-6 rounded-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition transform hover:scale-105">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+<script>
+    // Generic image preview function
+    function previewAdminImage(event, previewElementId, backgroundElementId) {
+        const reader = new FileReader();
+        reader.onload = function(){
+            const outputImg = document.getElementById(previewElementId);
+            if (outputImg) {
+                outputImg.src = reader.result;
+            }
+            if (backgroundElementId) {
+                const bgElement = document.getElementById(backgroundElementId);
+                if (bgElement) {
+                    bgElement.style.backgroundImage = `url('${reader.result}')`;
+                }
+            }
+        };
+        if (event.target.files[0]) {
+            reader.readAsDataURL(event.target.files[0]);
+        } else { // If no file is selected (e.g., user cancels), revert to original or default
+            const outputImg = document.getElementById(previewElementId);
+            const originalSrc = outputImg.dataset.originalSrc || '<%= contactData.hero?.backgroundImage || "/images/default-contact-hero.jpg" %>'; // Store original src in data attribute if needed
+            if (outputImg) {
+                outputImg.src = originalSrc;
+            }
+             if (backgroundElementId) {
+                const bgElement = document.getElementById(backgroundElementId);
+                if (bgElement) {
+                    bgElement.style.backgroundImage = `url('${originalSrc}')`;
+                }
+            }
+        }
+    }
+
+    function updateAdminMapPreview() {
+        const urlInput = document.getElementById('mapEmbedUrlInputAdmin');
+        const frame = document.getElementById('mapPreviewFrameAdmin');
+        const placeholder = document.getElementById('mapPlaceholderAdmin');
+        if (urlInput && frame && placeholder) {
+            const newUrl = urlInput.value.trim();
+            if (newUrl && newUrl.startsWith('https://')) { // Basic check for https
+                frame.src = newUrl;
+                frame.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                frame.src = ''; // Clear src if input is empty or invalid
+                frame.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
+    }
+    // Initial map preview update on page load for admin
+    document.addEventListener('DOMContentLoaded', updateAdminMapPreview);
+</script>
+</body>
+</html>

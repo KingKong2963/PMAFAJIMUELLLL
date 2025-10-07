@@ -1,0 +1,56 @@
+<%- include('partials/header') %>
+<main>
+<% if (typeof goalsData !== 'undefined' && goalsData) { %>
+
+  <section class="about-hero bg-cover bg-center h-80 md:h-96 text-white flex items-center relative" style="background-image: url('<%= goalsData.hero?.backgroundImage ?? '/images/about-hero.jpg' %>')">
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-indigo-900/80 z-10"></div>
+    <div class="container mx-auto text-center relative z-20 px-4">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 animate-fade-in"><%= goalsData.hero?.title ?? 'Our Goals' %></h1>
+      <p class="text-lg md:text-xl max-w-3xl mx-auto animate-slide-up"><%= goalsData.hero?.subtitle ?? 'Default goals subtitle.' %></p>
+    </div>
+  </section>
+
+  <section class="py-16 md:py-20 bg-gray-50">
+     <div class="container mx-auto px-4">
+       <div class="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-lg">
+           <div class="text-center mb-10">
+                <%# Using a different icon for Goals %>
+               <i class="fas fa-list-check text-4xl text-indigo-600 mb-4"></i>
+               <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4"><%= goalsData.content?.title ?? 'Content Title' %></h2>
+               <div class="w-20 h-1 bg-indigo-500 mx-auto"></div>
+           </div>
+           <%# Loop through goals array %>
+           <% if(goalsData.content?.goals && goalsData.content.goals.length > 0) { %>
+             <ul class="space-y-4 text-lg text-gray-700 list-none pl-0 md:pl-6"> <%# Changed to list-none, use icon instead %>
+                <% goalsData.content.goals.forEach(goal => { %>
+                    <li class="flex items-start">
+                        <span class="text-indigo-500 mr-3 mt-1"><i class="fas fa-check-circle"></i></span>
+                        <span><%= goal %></span>
+                    </li>
+                <% }) %>
+             </ul>
+           <% } else { %>
+              <p class="text-center text-gray-500 italic">No goals defined yet.</p>
+           <% } %>
+       </div>
+     </div>
+   </section>
+
+<% } else { %>
+    <section class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-4 text-center">
+             <h2 class="text-2xl font-semibold text-red-600">Content Unavailable</h2>
+             <p class="text-gray-600 mt-4">We couldn't load the page content. Please try again later.</p>
+        </div>
+    </section>
+<% } %>
+</main>
+
+<%# Static footer %>
+<footer class="bg-gray-800 text-white py-8">
+  <div class="container mx-auto text-center">
+    <p>© 2025 PMAFA. All rights reserved.</p>
+  </div>
+</footer>
+</body>
+</html>

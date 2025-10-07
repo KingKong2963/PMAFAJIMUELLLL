@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Home Page (Preview Mode)</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/home.css">
+    <style>
+        .wysiwyg-input, .wysiwyg-textarea {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px dashed rgba(0, 0, 0, 0.2);
+            padding: 2px 4px;
+            margin: 0;
+            display: inline-block;
+            width: auto;
+            min-width: 100px;
+            border-radius: 3px;
+            color: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            line-height: inherit;
+            vertical-align: baseline;
+        }
+        .wysiwyg-textarea {
+            width: 100%;
+            min-height: 60px;
+            display: block;
+            resize: vertical;
+        }
+        .wysiwyg-file-input-container {
+            border: 1px dashed rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .wysiwyg-file-input-container img {
+            max-height: 200px;
+            margin-bottom: 5px;
+            border: 1px solid #eee;
+            border-radius: 3px;
+        }
+        .wysiwyg-file-input {
+            display: block;
+            width: 100%;
+            font-size: 0.9em;
+        }
+        .wysiwyg-input:hover, .wysiwyg-textarea:hover, .wysiwyg-file-input-container:hover {
+            border: 1px dashed #4f46e5;
+            background-color: rgba(239, 246, 255, 0.2);
+        }
+        .wysiwyg-file-input::file-selector-button {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            margin-right: 5px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .remove-item-btn, .remove-image-btn {
+            position: absolute;
+            background-color: rgba(255, 0, 0, 0.6);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            cursor: pointer;
+            z-index: 10;
+            border: none;
+        }
+        .remove-item-btn {
+            top: 5px;
+            right: 5px;
+        }
+        .remove-image-btn {
+            top: 5px;
+            right: 5px;
+        }
+        .remove-item-btn:hover, .remove-image-btn:hover {
+            background-color: rgba(255, 0, 0, 0.8);
+        }
+        .add-item-container {
+            text-align: center;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            margin-top: 15px;
+        }
+        #save-changes-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        .admin-nav-scroll {
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 1rem;
+        }
+        .admin-nav-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .admin-nav-scroll::-webkit-scrollbar-track {
+            background: rgba(67, 56, 202, 0.2);
+            border-radius: 10px;
+        }
+        .admin-nav-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(79, 70, 229, 0.7);
+            border-radius: 10px;
+            border: 1px solid transparent;
+            background-clip: content-box;
+        }
+        .admin-nav-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(67, 56, 202, 1);
+        }
+        .images-container, .embed-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .embed-preview {
+            max-width: 100%;
+            max-height: 200px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <%- include('partials/sidebar', { currentPage: currentPage }) %>
+
+        <div class="flex-1 overflow-y-auto">
+            <% if (typeof homeData === 'undefined' || !homeData) { %>
+                <div class="p-10 bg-red-100 border border-red-400 text-red-700" role="alert">
+                    <strong class="font-bold">Error:</strong> Home page data is missing. Cannot render editor.
+                </div>
+            <% } else { %>
+                <form action="/admin/edit-home" method="POST" enctype="multipart/form-data" id="edit-home-form">
+                    <main>
+                        <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+                            <div class="absolute inset-0 bg-contain bg-no-repeat bg-center" style="background-image: url('<%= homeData.hero?.backgroundImage ?? '/images/default-hero.jpg' %>')"></div>
+                            <div class="absolute inset-0 hero-gradient"></div>
+                            <div class="container mx-auto px-4 relative z-10 text-center">
+                                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 animate-fade-in">
+                                    <input type="text" name="hero.title" value="<%= homeData.hero?.title ?? '' %>" class="wysiwyg-input text-center text-4xl md:text-5xl lg:text-6xl font-bold text-white bg-transparent border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0" style="width: 80%;">
+                                </h1>
+                                <p class="text-xl md:text-2xl text-white mb-10 max-w-3xl mx-auto animate-slide-up">
+                                    <textarea name="hero.subtitle" rows="2" class="wysiwyg-textarea text-center text-xl md:text-2xl text-white bg-transparent border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 w-full max-w-3xl mx-auto"><%= homeData.hero?.subtitle ?? '' %></textarea>
+                                </p>
+                                <div class="mt-8 max-w-md mx-auto">
+                                    <div class="wysiwyg-file-input-container bg-black bg-opacity-30 text-left">
+                                        <label class="block text-sm font-medium text-gray-200 mb-1" for="heroBackgroundImage">Edit Hero Background Image</label>
+                                        <% if (homeData.hero?.backgroundImage) { %>
+                                            <div class="mb-1"><img src="<%= homeData.hero.backgroundImage %>" alt="Current Hero Background"></div>
+                                        <% } %>
+                                        <input type="file" id="heroBackgroundImage" name="heroBackgroundImage" accept="image/*" class="wysiwyg-file-input text-gray-300">
+                                        <p class="mt-1 text-xs text-gray-400">Upload new image. Leave empty to keep current.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                                <a href="#featured-stories" class="text-white opacity-70 hover:opacity-100 transition">
+                                    <i class="fas fa-chevron-down text-2xl"></i>
+                                </a>
+                            </div>
+                        </section>
+
+                        <section id="featured-stories" class="py-16 md:py-24 bg-gray-50">
+                            <div class="container mx-auto px-4">
+                                <div class="text-center mb-16">
+                                    <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                                        <input type="text" name="featuredStories.title" value="<%= homeData.featuredStories?.title ?? '' %>" class="wysiwyg-input text-center text-3xl md:text-4xl font-bold">
+                                    </h2>
+                                    <div class="w-24 h-1 bg-indigo-600 mx-auto mb-6"></div>
+                                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                                        <textarea name="featuredStories.subtitle" rows="2" class="wysiwyg-textarea text-center text-lg text-gray-600 w-full max-w-3xl mx-auto"><%= homeData.featuredStories?.subtitle ?? '' %></textarea>
+                                    </p>
+                                </div>
+                                <div id="stories-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8">
+                                    <% homeData.featuredStories?.stories?.forEach((story, index) => { %>
+                                        <div class="story-card bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition relative">
+                                            <div class="px-4 py-2">
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Content Type</label>
+                                                <div class="flex items-center space-x-4">
+                                                    <label class="inline-flex items-center">
+                                                        <input type="radio" name="featuredStories.stories[<%= index %>].contentType" value="images" <%= (story.images && story.images.length > 0) || !story.embedLink ? 'checked' : '' %> class="content-type-radio" data-index="<%= index %>">
+                                                        <span class="ml-2 text-sm">Images</span>
+                                                    </label>
+                                                    <label class="inline-flex items-center">
+                                                        <input type="radio" name="featuredStories.stories[<%= index %>].contentType" value="embed" <%= story.embedLink ? 'checked' : '' %> class="content-type-radio" data-index="<%= index %>">
+                                                        <span class="ml-2 text-sm">Embed Link</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="images-container p-2 <%= story.embedLink ? 'hidden' : '' %>" data-type="images" data-index="<%= index %>">
+                                                <div class="grid grid-cols-2 gap-2">
+                                                    <% (story.images || []).forEach((image, imgIndex) => { %>
+                                                        <div class="relative">
+                                                            <img src="<%= image %>" alt="Story Image" class="w-full h-48 object-cover story-image">
+                                                            <button type="button" class="remove-image-btn">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                            <input type="hidden" name="existingStoryImages[<%= index %>][]" value="<%= image %>">
+                                                        </div>
+                                                    <% }) %>
+                                                    <% if (!story.images || story.images.length === 0) { %>
+                                                        <img src="/images/default-story.jpg" alt="Default Story Image" class="w-full h-48 object-cover col-span-2 story-image">
+                                                    <% } %>
+                                                </div>
+                                                <div class="px-4 py-2">
+                                                    <label class="block text-sm font-medium text-gray-700" for="newStoryImages_<%= index %>">Add more photos</label>
+                                                    <input type="file" id="newStoryImages_<%= index %>" name="newStoryImages[<%= index %>][]" accept="image/*" multiple class="wysiwyg-file-input">
+                                                </div>
+                                            </div>
+                                            <div class="embed-container p-2 <%= story.embedLink ? '' : 'hidden' %>" data-type="embed" data-index="<%= index %>">
+                                                <label class="block text-sm font-medium text-gray-700" for="storyEmbedLink_<%= index %>">Facebook/YouTube Embed Link</label>
+                                                <input type="text" id="storyEmbedLink_<%= index %>" name="featuredStories.stories[<%= index %>].embedLink" value="<%= story.embedLink ?? '' %>" placeholder="Enter Facebook or YouTube link" class="wysiwyg-input w-full">
+                                                <div class="embed-preview mt-2">
+                                                    <% if (story.embedLink) { %>
+                                                        <% if (story.embedLink.includes('youtube.com') || story.embedLink.includes('youtu.be')) { %>
+                                                            <iframe width="100%" height="200" src="<%= story.embedLink.replace(/watch\?v=/, 'embed/').replace('youtu.be/', 'youtube.com/embed/') %>" frameborder="0" allowfullscreen></iframe>
+                                                        <% } else if (story.embedLink.includes('facebook.com')) { %>
+                                                            <div class="fb-post" data-href="<%= story.embedLink %>" data-width="100%" data-show-text="true"></div>
+                                                        <% } %>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            <div class="p-6">
+                                                <h3 class="text-xl font-semibold mb-2">
+                                                    <input type="text" name="featuredStories.stories[<%= index %>].title" value="<%= story.title ?? '' %>" class="wysiwyg-input text-xl font-semibold w-full">
+                                                </h3>
+                                                <p class="text-gray-600 mb-4">
+                                                    <textarea name="featuredStories.stories[<%= index %>].description" rows="3" class="wysiwyg-textarea text-gray-600 w-full"><%= story.description ?? '' %></textarea>
+                                                </p>
+                                            </div>
+                                            <button type="button" class="remove-story-btn remove-item-btn" data-index="<%= index %>">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    <% }) %>
+                                    <% if (!homeData.featuredStories?.stories || homeData.featuredStories.stories.length === 0) { %>
+                                        <p class="text-gray-500 italic col-span-full text-center">No stories defined yet.</p>
+                                    <% } %>
+                                </div>
+                                <div class="add-item-container">
+                                    <button type="button" id="add-story-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 text-sm">
+                                        <i class="fas fa-plus mr-1"></i> Add Story
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="testimonials" class="py-16 md:py-24 bg-white">
+                            <div class="container mx-auto px-4">
+                                <div class="text-center mb-16">
+                                    <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                                        <input type="text" name="testimonials.title" value="<%= homeData.testimonials?.title ?? '' %>" class="wysiwyg-input text-center text-3xl md:text-4xl font-bold">
+                                    </h2>
+                                    <div class="w-24 h-1 bg-indigo-600 mx-auto mb-6"></div>
+                                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                                        <textarea name="testimonials.subtitle" rows="2" class="wysiwyg-textarea text-center text-lg text-gray-600 w-full max-w-3xl mx-auto"><%= homeData.testimonials?.subtitle ?? '' %></textarea>
+                                    </p>
+                                </div>
+                                <div id="testimonials-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8">
+                                    <% homeData.testimonials?.testimonials?.forEach((testimonial, index) => { %>
+                                        <div class="testimonial-card bg-gray-50 p-6 rounded-xl shadow-md relative">
+                                            <div class="text-indigo-600 text-4xl absolute -top-5 left-6">"</div>
+                                            <p class="text-gray-600 mb-6 pt-4">
+                                                <textarea name="testimonials.testimonials[<%= index %>].quote" rows="4" class="wysiwyg-textarea text-gray-600 w-full"><%= testimonial.quote ?? '' %></textarea>
+                                            </p>
+                                            <div class="flex items-center">
+                                                <div class="w-12 h-12 rounded-full overflow-hidden mr-4 relative group">
+                                                    <img src="<%= testimonial.image ?? '/images/default-testimonial.jpg' %>" alt="Testimonial Image" class="w-full h-full object-cover">
+                                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center">
+                                                        <div class="wysiwyg-file-input-container opacity-0 group-hover:opacity-100 transition-opacity text-center p-1">
+                                                            <label class="block text-xs font-medium text-white mb-1" for="testimonialImage_<%= index %>">Change</label>
+                                                            <input type="file" id="testimonialImage_<%= index %>" name="testimonialImage_<%= index %>" accept="image/*" class="wysiwyg-file-input text-white text-xs w-full">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-medium">
+                                                        <input type="text" name="testimonials.testimonials[<%= index %>].name" value="<%= testimonial.name ?? '' %>" class="wysiwyg-input font-medium w-full">
+                                                    </h4>
+                                                    <p class="text-sm text-gray-500">
+                                                        <input type="text" name="testimonials.testimonials[<%= index %>].origin" value="<%= testimonial.origin ?? '' %>" class="wysiwyg-input text-sm text-gray-500 w-full">
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="remove-testimonial-btn remove-item-btn" data-index="<%= index %>">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    <% }) %>
+                                    <% if (!homeData.testimonials?.testimonials || homeData.testimonials.testimonials.length === 0) { %>
+                                        <p class="text-gray-500 italic col-span-full text-center">No testimonials defined yet.</p>
+                                    <% } %>
+                                </div>
+                                <div class="add-item-container">
+                                    <button type="button" id="add-testimonial-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 text-sm">
+                                        <i class="fas fa-plus mr-1"></i> Add Testimonial
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <footer class="bg-gray-900 text-white">
+                            <div class="mt-12 border-t border-gray-800 pt-8 pb-8 text-center">
+                                <p class="text-gray-400">
+                                    <input type="text" name="footer.copyright" value="<%= homeData.footer?.copyright ?? '' %>" class="wysiwyg-input text-center text-gray-400 bg-transparent border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 w-3/4">
+                                </p>
+                            </div>
+                        </footer>
+                    </main>
+
+                    <button type="submit" id="save-changes-btn" class="bg-indigo-600 text-white py-3 px-6 rounded-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition transform hover:scale-105">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const storiesContainer = document.getElementById('stories-container');
+            const addStoryBtn = document.getElementById('add-story-btn');
+
+            const updateStoryIndices = () => {
+                const storyCards = storiesContainer.querySelectorAll('.story-card');
+                const storyCount = storyCards.length;
+                storyCards.forEach((card, index) => {
+                    const titleInput = card.querySelector('input[name^="featuredStories.stories"][name$=".title"]');
+                    if (titleInput) titleInput.name = `featuredStories.stories[${index}].title`;
+                    const descTextarea = card.querySelector('textarea[name^="featuredStories.stories"][name$=".description"]');
+                    if (descTextarea) descTextarea.name = `featuredStories.stories[${index}].description`;
+                    const embedInput = card.querySelector('input[name^="featuredStories.stories"][name$=".embedLink"]');
+                    if (embedInput) embedInput.name = `featuredStories.stories[${index}].embedLink`;
+                    const hiddens = card.querySelectorAll('input[type="hidden"][name^="existingStoryImages"]');
+                    hiddens.forEach(h => h.name = `existingStoryImages[${index}][]`);
+                    const newImageInput = card.querySelector('input[type="file"][name^="newStoryImages"]');
+                    if (newImageInput) {
+                        newImageInput.name = `newStoryImages[${index}][]`;
+                        newImageInput.id = `newStoryImages_${index}`;
+                        const label = card.querySelector('label[for^="newStoryImages_"]');
+                        if (label) label.setAttribute('for', `newStoryImages_${index}`);
+                    }
+                    const removeBtn = card.querySelector('.remove-story-btn');
+                    if (removeBtn) removeBtn.dataset.index = index;
+                    if (removeBtn) removeBtn.classList.toggle('hidden', storyCount <= 1);
+                    const radios = card.querySelectorAll('.content-type-radio');
+                    radios.forEach(r => r.name = `featuredStories.stories[${index}].contentType`);
+                    const imagesContainer = card.querySelector('.images-container');
+                    if (imagesContainer) imagesContainer.dataset.index = index;
+                    const embedContainer = card.querySelector('.embed-container');
+                    if (embedContainer) embedContainer.dataset.index = index;
+                });
+                const noStoriesMsg = document.querySelector('#stories-container > p.text-gray-500');
+                if (noStoriesMsg) noStoriesMsg.style.display = storyCount === 0 ? 'block' : 'none';
+            };
+
+            const toggleContentType = (card, index, type) => {
+                const imagesContainer = card.querySelector(`.images-container[data-index="${index}"]`);
+                const embedContainer = card.querySelector(`.embed-container[data-index="${index}"]`);
+                if (imagesContainer && embedContainer) {
+                    imagesContainer.classList.toggle('hidden', type === 'embed');
+                    embedContainer.classList.toggle('hidden', type === 'images');
+                }
+            };
+
+            if (addStoryBtn && storiesContainer) {
+                addStoryBtn.addEventListener('click', () => {
+                    const currentStoryCount = storiesContainer.querySelectorAll('.story-card').length;
+                    if (currentStoryCount >= 10) { alert('Maximum of 10 stories allowed.'); return; }
+
+                    const newStoryCard = document.createElement('div');
+                    newStoryCard.className = 'story-card bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition relative';
+                    newStoryCard.innerHTML = `
+                        <div class="px-4 py-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Content Type</label>
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="featuredStories.stories[${currentStoryCount}].contentType" value="images" checked class="content-type-radio" data-index="${currentStoryCount}">
+                                    <span class="ml-2 text-sm">Images</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="featuredStories.stories[${currentStoryCount}].contentType" value="embed" class="content-type-radio" data-index="${currentStoryCount}">
+                                    <span class="ml-2 text-sm">Embed Link</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="images-container p-2" data-type="images" data-index="${currentStoryCount}">
+                            <div class="grid grid-cols-2 gap-2">
+                                <img src="/images/default-story.jpg" alt="Default Story Image" class="w-full h-48 object-cover col-span-2 story-image">
+                            </div>
+                            <div class="px-4 py-2">
+                                <label class="block text-sm font-medium text-gray-700" for="newStoryImages_${currentStoryCount}">Add photos</label>
+                                <input type="file" id="newStoryImages_${currentStoryCount}" name="newStoryImages[${currentStoryCount}][]" accept="image/*" multiple class="wysiwyg-file-input">
+                            </div>
+                        </div>
+                        <div class="embed-container p-2 hidden" data-type="embed" data-index="${currentStoryCount}">
+                            <label class="block text-sm font-medium text-gray-700" for="storyEmbedLink_${currentStoryCount}">Facebook/YouTube Embed Link</label>
+                            <input type="text" id="storyEmbedLink_${currentStoryCount}" name="featuredStories.stories[${currentStoryCount}].embedLink" placeholder="Enter Facebook or YouTube link" class="wysiwyg-input w-full">
+                            <div class="embed-preview mt-2"></div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2">
+                                <input type="text" name="featuredStories.stories[${currentStoryCount}].title" value="" placeholder="New Story Title" class="wysiwyg-input text-xl font-semibold w-full">
+                            </h3>
+                            <p class="text-gray-600 mb-4">
+                                <textarea name="featuredStories.stories[${currentStoryCount}].description" rows="3" placeholder="New story description..." class="wysiwyg-textarea text-gray-600 w-full"></textarea>
+                            </p>
+                        </div>
+                        <button type="button" class="remove-story-btn remove-item-btn" data-index="${currentStoryCount}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    storiesContainer.appendChild(newStoryCard);
+                    updateStoryIndices();
+                });
+            }
+
+            if (storiesContainer) {
+                storiesContainer.addEventListener('click', (e) => {
+                    const removeBtn = e.target.closest('.remove-story-btn');
+                    const removeImageBtn = e.target.closest('.remove-image-btn');
+                    if (removeBtn) {
+                        const storyCards = storiesContainer.querySelectorAll('.story-card');
+                        if (storyCards.length <= 1) { alert('At least one story is required.'); return; }
+                        if (confirm('Are you sure you want to remove this story?')) {
+                            removeBtn.closest('.story-card').remove();
+                            updateStoryIndices();
+                        }
+                    }
+                    if (removeImageBtn) {
+                        const imageDiv = removeImageBtn.closest('.relative');
+                        if (imageDiv && confirm('Are you sure you want to remove this image?')) {
+                            imageDiv.remove();
+                        }
+                    }
+                });
+
+                storiesContainer.addEventListener('change', (e) => {
+                    const radio = e.target.closest('.content-type-radio');
+                    if (radio) {
+                        const index = radio.dataset.index;
+                        const card = radio.closest('.story-card');
+                        toggleContentType(card, index, radio.value);
+                    }
+                });
+
+                storiesContainer.addEventListener('input', (e) => {
+                    const input = e.target;
+                    if (input.name && input.name.endsWith('.embedLink')) {
+                        const indexMatch = input.name.match(/\[(\d+)\]/);
+                        if (!indexMatch) return;
+                        const index = indexMatch[1];
+                        const previewDiv = storiesContainer.querySelector(`.embed-container[data-index="${index}"] .embed-preview`);
+                        const link = input.value.trim();
+                        if (!link) {
+                            previewDiv.innerHTML = '';
+                            return;
+                        }
+                        if (link.includes('youtube.com') || link.includes('youtu.be')) {
+                            let embedUrl = link.replace(/watch\?v=/, 'embed/').replace('youtu.be/', 'youtube.com/embed/');
+                            previewDiv.innerHTML = `<iframe width="100%" height="200" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`;
+                        } else if (link.includes('facebook.com')) {
+                            previewDiv.innerHTML = `<div class="fb-post" data-href="${link}" data-width="100%" data-show-text="true"></div>`;
+                            if (window.FB) {
+                                FB.XFBML.parse(previewDiv);
+                            }
+                        } else {
+                            previewDiv.innerHTML = '<p class="text-red-500">Unsupported link.</p>';
+                        }
+                    }
+                });
+            }
+            updateStoryIndices();
+
+            const testimonialsContainer = document.getElementById('testimonials-container');
+            const addTestimonialBtn = document.getElementById('add-testimonial-btn');
+
+            const updateTestimonialIndices = () => {
+                const testimonialCards = testimonialsContainer.querySelectorAll('.testimonial-card');
+                const testimonialCount = testimonialCards.length;
+                testimonialCards.forEach((card, index) => {
+                    card.querySelector('textarea[name^="testimonials.testimonials"][name$=".quote"]').name = `testimonials.testimonials[${index}].quote`;
+                    card.querySelector('input[name^="testimonials.testimonials"][name$=".name"]').name = `testimonials.testimonials[${index}].name`;
+                    card.querySelector('input[name^="testimonials.testimonials"][name$=".origin"]').name = `testimonials.testimonials[${index}].origin`;
+                    const imageInput = card.querySelector('input[name^="testimonialImage_"]');
+                    if(imageInput) imageInput.name = `testimonialImage_${index}`;
+                    const imageLabel = card.querySelector('label[for^="testimonialImage_"]');
+                    if(imageLabel) imageLabel.setAttribute('for', `testimonialImage_${index}`);
+                    const removeBtn = card.querySelector('.remove-testimonial-btn');
+                    if(removeBtn) removeBtn.dataset.index = index;
+                    if(removeBtn) removeBtn.classList.toggle('hidden', testimonialCount <= 1);
+                });
+                const noTestimonialsMsg = document.querySelector('#testimonials-container > p.text-gray-500');
+                if (noTestimonialsMsg) noTestimonialsMsg.style.display = testimonialCount === 0 ? 'block' : 'none';
+            };
+
+            if (addTestimonialBtn && testimonialsContainer) {
+                addTestimonialBtn.addEventListener('click', () => {
+                    const currentTestimonialCount = testimonialsContainer.querySelectorAll('.testimonial-card').length;
+                    if (currentTestimonialCount >= 10) { alert('Maximum of 10 testimonials allowed.'); return; }
+
+                    const newTestimonialCard = document.createElement('div');
+                    newTestimonialCard.className = 'testimonial-card bg-gray-50 p-6 rounded-xl shadow-md relative';
+                    newTestimonialCard.innerHTML = `
+                        <div class="text-indigo-600 text-4xl absolute -top-5 left-6">"</div>
+                        <p class="text-gray-600 mb-6 pt-4">
+                            <textarea name="testimonials.testimonials[${currentTestimonialCount}].quote" rows="4" placeholder="New testimonial quote..." class="wysiwyg-textarea text-gray-600 w-full"></textarea>
+                        </p>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full overflow-hidden mr-4 relative group">
+                                <img src="/images/default-testimonial.jpg" alt="New Testimonial Image" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center">
+                                    <div class="wysiwyg-file-input-container opacity-0 group-hover:opacity-100 transition-opacity text-center p-1">
+                                        <label class="block text-xs font-medium text-white mb-1" for="testimonialImage_${currentTestimonialCount}">Change</label>
+                                        <input type="file" id="testimonialImage_${currentTestimonialCount}" name="testimonialImage_${currentTestimonialCount}" accept="image/*" class="wysiwyg-file-input text-white text-xs w-full">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium">
+                                    <input type="text" name="testimonials.testimonials[${currentTestimonialCount}].name" value="" placeholder="Name" class="wysiwyg-input font-medium w-full">
+                                </h4>
+                                <p class="text-sm text-gray-500">
+                                    <input type="text" name="testimonials.testimonials[${currentTestimonialCount}].origin" value="" placeholder="Origin" class="wysiwyg-input text-sm text-gray-500 w-full">
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" class="remove-testimonial-btn remove-item-btn" data-index="${currentTestimonialCount}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    testimonialsContainer.appendChild(newTestimonialCard);
+                    updateTestimonialIndices();
+                });
+            }
+
+            if (testimonialsContainer) {
+                testimonialsContainer.addEventListener('click', (e) => {
+                    const removeBtn = e.target.closest('.remove-testimonial-btn');
+                    if (removeBtn) {
+                        const testimonialCards = testimonialsContainer.querySelectorAll('.testimonial-card');
+                        if (testimonialCards.length <= 1) { alert('At least one testimonial is required.'); return; }
+                        if (confirm('Are you sure you want to remove this testimonial?')) {
+                            removeBtn.closest('.testimonial-card').remove();
+                            updateTestimonialIndices();
+                        }
+                    }
+                });
+            }
+            updateTestimonialIndices();
+        });
+    </script>
+
+    <!-- Facebook SDK Initialization -->
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v19.0"></script>
+    <script>
+        window.fbAsyncInit = function() {
+            FB.init({
+                xfbml: true,
+                version: 'v19.0'
+            });
+        };
+    </script>
+</body>
+</html>

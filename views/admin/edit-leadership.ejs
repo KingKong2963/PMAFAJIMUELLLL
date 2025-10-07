@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/admin-main.css">
+    <style>
+        .wysiwyg-input, .wysiwyg-textarea { background-color: rgba(239, 246, 255, 0.3); border: 1px dashed rgba(0, 0, 0, 0.2); padding: 2px 4px; margin: 0 0 2px 0; display: inline-block; width: auto; min-width: 100px; border-radius: 3px; color: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; vertical-align: baseline; }
+        .wysiwyg-textarea { width: 100%; min-height: 60px; display: block; resize: vertical; }
+        .wysiwyg-file-input-container { border: 1px dashed rgba(0, 0, 0, 0.2); padding: 10px; margin-top: 10px; border-radius: 5px; background-color: rgba(239, 246, 255, 0.3); }
+        .wysiwyg-hero-bg-input-container { background-color: rgba(0, 0, 0, 0.4); } /* Already present in your EJS */
+        .wysiwyg-file-input-container img.preview-image { max-height: 100px; margin-bottom: 5px; border: 1px solid #eee; border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 10px; }
+        .wysiwyg-file-input-container img.preview-image-large { max-height: 150px; border-radius: 50%; }
+        .wysiwyg-file-input-container img.preview-image-small { max-height: 80px; border-radius: 50%;}
+        .wysiwyg-file-input { display: inline-block; width: auto; font-size: 0.9em; vertical-align: middle; }
+        .wysiwyg-input:hover, .wysiwyg-textarea:hover, .wysiwyg-file-input-container:hover { border: 1px dashed #4f46e5; background-color: rgba(224, 231, 255, 0.4); }
+        .wysiwyg-file-input::file-selector-button { font-size: 0.8em; padding: 4px 8px; margin-right: 5px; border-radius: 3px; border: 1px solid #ccc; background-color: #f0f0f0; cursor: pointer; }
+        #save-changes-btn { position: fixed; bottom: 20px; right: 20px; z-index: 100; }
+        .team-member-edit { border: 1px dashed #ccc; background-color: #f9fafb; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem; position: relative; padding-right: 40px; }
+        .remove-item-btn { position: absolute; top: 1rem; right: 1rem; background-color: rgba(255, 0, 0, 0.6); color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.8em; cursor: pointer; border: none; line-height: 0; }
+        .remove-item-btn:hover { background-color: rgba(255, 0, 0, 0.8); }
+        .add-item-container { text-align: center; padding: 15px; border-top: 1px solid #eee; margin-top: 15px; }
+        label small { font-weight: normal; color: #6b7280; }
+        .admin-nav-scroll { overflow-y: auto; overflow-x: hidden; padding-bottom: 1rem; }
+        .admin-nav-scroll::-webkit-scrollbar { width: 6px; }
+        .admin-nav-scroll::-webkit-scrollbar-track { background: rgba(67, 56, 202, 0.2); border-radius: 10px; }
+        .admin-nav-scroll::-webkit-scrollbar-thumb { background-color: rgba(79, 70, 229, 0.7); border-radius: 10px; border: 1px solid transparent; background-clip: content-box; }
+        .admin-nav-scroll::-webkit-scrollbar-thumb:hover { background-color: rgba(67, 56, 202, 1); }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <%- include('partials/sidebar', { currentPage: currentPage }) %>
+
+        <div class="flex-1 overflow-y-auto">
+            <% if (typeof leadershipData === 'undefined' || !leadershipData) { %>
+                <div class="p-10 bg-red-100 border border-red-400 text-red-700" role="alert">Error loading leadership data.</div>
+            <% } else { %>
+                <form action="/admin/edit-leadership" method="POST" enctype="multipart/form-data" id="edit-leadership-form">
+                    <main>
+                        <section id="leadership-hero-admin-preview" class="relative min-h-screen flex items-center justify-center overflow-hidden" style="background-image: url('<%= leadershipData.hero?.backgroundImage || '/images/default-leadership-hero.jpg' %>'); background-size: contain; background-position: center;  background-repeat: no-repeat;">
+                            <div class="absolute inset-0 hero-gradient z-10 opacity-50"></div> <div class="container mx-auto px-4 relative z-20 text-center">
+                                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4"> <input type="text" name="hero.title" value="<%= leadershipData.hero?.title ?? 'Our Leadership' %>" class="wysiwyg-input text-center text-4xl md:text-5xl lg:text-6xl font-bold text-white bg-white bg-opacity-20 border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 placeholder-gray-300" style="width: 80%;" placeholder="Hero Title">
+                                </h1>
+                                <p class="text-xl md:text-2xl text-white mb-10 max-w-3xl mx-auto"> <textarea name="hero.subtitle" rows="2" class="wysiwyg-textarea text-center text-xl md:text-2xl text-white bg-white bg-opacity-20 border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 w-full max-w-3xl mx-auto placeholder-gray-300" placeholder="Hero Subtitle"><%= leadershipData.hero?.subtitle ?? 'Meet the dedicated team...' %></textarea>
+                                </p>
+                                <div class="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-full text-lg font-medium transition transform hover:scale-105 shadow-lg inline-block"> <input type="text" name="hero.buttonText" value="<%= leadershipData.hero?.buttonText ?? 'Meet the Team' %>" class="wysiwyg-input bg-transparent border-none text-center p-0 text-lg font-medium text-white placeholder-gray-300" placeholder="Button Text">
+                                </div>
+                                
+                                <div class="mt-8 max-w-md mx-auto">
+                                    <div class="wysiwyg-file-input-container wysiwyg-hero-bg-input-container text-left p-4 rounded">
+                                        <label class="block text-sm font-medium text-gray-200 mb-1" for="heroBackgroundImageFileLeadership">Hero Background Image</label>
+                                        <img id="heroLeadershipBgPreviewDisplay" src="<%= leadershipData.hero?.backgroundImage || '/images/default-leadership-hero.jpg' %>" alt="Current Hero Background" class="preview-image mb-2">
+                                        <input type="file" id="heroBackgroundImageFileLeadership" name="heroBackgroundImage" accept="image/*" class="wysiwyg-file-input text-gray-300" onchange="previewAdminImage(event, 'heroLeadershipBgPreviewDisplay', 'leadership-hero-admin-preview')">
+                                        <p class="mt-1 text-xs text-gray-400 block">Upload new image. If empty, current/default is used.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+                                <a href="#leadership-section-admin" class="text-white opacity-70 hover:opacity-100 transition"><i class="fas fa-chevron-down text-2xl"></i></a>
+                            </div>
+                        </section>
+
+                        <section id="leadership-section-admin" class="py-16 md:py-24 bg-white">
+                            <div class="container mx-auto px-4">
+                                <div class="text-center mb-16">
+                                    <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                                        <input type="text" name="leadershipSection.title" value="<%= leadershipData.leadershipSection?.title ?? 'Leadership Hierarchy' %>" class="wysiwyg-input text-center text-3xl md:text-4xl font-bold w-full" placeholder="Section Title">
+                                    </h2>
+                                    <div class="w-24 h-1 bg-indigo-600 mx-auto mb-6"></div>
+                                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                                        <textarea name="leadershipSection.subtitle" rows="2" class="wysiwyg-textarea text-center text-lg text-gray-600 w-full max-w-3xl mx-auto" placeholder="Section Subtitle"><%= leadershipData.leadershipSection?.subtitle ?? 'Our leadership team works tirelessly...' %></textarea>
+                                    </p>
+                                </div>
+
+                                <%# Mayor Edit %>
+                                <div class="mb-16 max-w-4xl mx-auto bg-gray-50 p-8 rounded-xl shadow-xl border border-dashed border-gray-400">
+                                    <h3 class="text-center text-2xl font-semibold text-gray-500 mb-6 border-b pb-3">Edit Mayor</h3>
+                                    <div class="text-center mb-6">
+                                        <img id="mayorImagePreview" src="<%= leadershipData.leadershipSection?.mayor?.image ?? 'https://via.placeholder.com/256x256?text=Mayor' %>" alt="Current Mayor Image" class="w-48 h-48 rounded-full mx-auto mb-4 object-cover border-4 border-gray-300 preview-image-large">
+                                        <div class="wysiwyg-file-input-container max-w-xs mx-auto">
+                                            <label class="block text-xs font-medium text-gray-700 mb-1" for="mayorImageFile">Change Mayor Image</label>
+                                            <input type="file" id="mayorImageFile" name="mayorImage" accept="image/*" class="wysiwyg-file-input" onchange="previewAdminImage(event, 'mayorImagePreview')">
+                                        </div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div><label class="block text-sm font-medium text-gray-700">Name</label><input type="text" name="mayor.name" value="<%= leadershipData.leadershipSection?.mayor?.name ?? '' %>" class="wysiwyg-input text-2xl font-bold w-full" placeholder="Mayor's Name"></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Title</label><input type="text" name="mayor.title" value="<%= leadershipData.leadershipSection?.mayor?.title ?? '' %>" class="wysiwyg-input text-lg text-indigo-600 w-full" placeholder="Mayor's Title"></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Bio</label><textarea name="mayor.bio" rows="3" class="wysiwyg-textarea text-gray-600 w-full" placeholder="Mayor's Bio"><%= leadershipData.leadershipSection?.mayor?.bio ?? '' %></textarea></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Email</label><input type="email" name="mayor.email" value="<%= leadershipData.leadershipSection?.mayor?.email ?? '' %>" class="wysiwyg-input text-sm w-full" placeholder="mayor@example.com"></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Tenure <small>(e.g., "Since 2020")</small></label><input type="text" name="mayor.tenure" value="<%= leadershipData.leadershipSection?.mayor?.tenure ?? '' %>" class="wysiwyg-input text-sm w-full" placeholder="Since YYYY"></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Key Achievements</label><textarea name="mayor.achievements" rows="3" class="wysiwyg-textarea text-sm w-full" placeholder="List key achievements..."><%= leadershipData.leadershipSection?.mayor?.achievements ?? '' %></textarea></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Link Slug <small>(e.g., /administration/person/mayor-slug)</small></label><input type="text" name="mayor.link" value="<%= leadershipData.leadershipSection?.mayor?.link ?? '' %>" class="wysiwyg-input text-sm w-full" placeholder="/administration/person/unique-slug"></div>
+                                    </div>
+                                </div>
+
+                                <%# President Edit %>
+                                <div class="mb-16 max-w-4xl mx-auto bg-gray-50 p-8 rounded-xl shadow-xl border border-dashed border-gray-400">
+                                    <h3 class="text-center text-2xl font-semibold text-gray-500 mb-6 border-b pb-3">Edit President</h3>
+                                    <div class="text-center mb-6">
+                                        <img id="presidentImagePreview" src="<%= leadershipData.leadershipSection?.president?.image ?? 'https://via.placeholder.com/256x256?text=President' %>" alt="Current President Image" class="w-48 h-48 rounded-full mx-auto mb-4 object-cover border-4 border-gray-300 preview-image-large">
+                                        <div class="wysiwyg-file-input-container max-w-xs mx-auto">
+                                            <label class="block text-xs font-medium text-gray-700 mb-1" for="presidentImageFile">Change President Image</label>
+                                            <input type="file" id="presidentImageFile" name="presidentImage" accept="image/*" class="wysiwyg-file-input" onchange="previewAdminImage(event, 'presidentImagePreview')">
+                                        </div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div><label class="block text-sm font-medium text-gray-700">Name</label><input type="text" name="president.name" value="<%= leadershipData.leadershipSection?.president?.name ?? '' %>" class="wysiwyg-input text-2xl font-bold w-full" placeholder="President's Name"></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Title</label><input type="text" name="president.title" value="<%= leadershipData.leadershipSection?.president?.title ?? '' %>" class="wysiwyg-input text-lg text-indigo-600 w-full" placeholder="President's Title"></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Bio</label><textarea name="president.bio" rows="3" class="wysiwyg-textarea text-gray-600 w-full" placeholder="President's Bio"><%= leadershipData.leadershipSection?.president?.bio ?? '' %></textarea></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Email</label><input type="email" name="president.email" value="<%= leadershipData.leadershipSection?.president?.email ?? '' %>" class="wysiwyg-input text-sm w-full" placeholder="president@example.com"></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Tenure</label><input type="text" name="president.tenure" value="<%= leadershipData.leadershipSection?.president?.tenure ?? '' %>" class="wysiwyg-input text-sm w-full" placeholder="Since YYYY"></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Key Achievements</label><textarea name="president.achievements" rows="3" class="wysiwyg-textarea text-sm w-full" placeholder="List key achievements..."><%= leadershipData.leadershipSection?.president?.achievements ?? '' %></textarea></div>
+                                        <div><label class="block text-sm font-medium text-gray-700">Link Slug</label><input type="text" name="president.link" value="<%= leadershipData.leadershipSection?.president?.link ?? '' %>" class="wysiwyg-input text-sm w-full" placeholder="/administration/person/unique-slug"></div>
+                                    </div>
+                                </div>
+
+                                <%# Team Members Edit %>
+                                <h3 class="text-center text-2xl font-semibold text-gray-700 mb-6 border-b pb-3 max-w-5xl mx-auto">Edit Team Members</h3>
+                                <div id="team-members-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                                    <% leadershipData.leadershipSection?.teamMembers?.forEach((member, index) => { %>
+                                      <div class="team-member-edit p-4 text-center">
+                                          <img id="teamMemberImagePreview_<%= index %>" src="<%= member.image ?? 'https://via.placeholder.com/128x128?text=Person' %>" alt="Current Member Image" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border preview-image-small">
+                                          <div class="wysiwyg-file-input-container max-w-xs mx-auto mb-4">
+                                              <label class="block text-xs font-medium text-gray-700 mb-1" for="teamMemberImageFile_<%= index %>">Change Image</label>
+                                              <input type="file" id="teamMemberImageFile_<%= index %>" name="teamMemberImage_<%= index %>" accept="image/*" class="wysiwyg-file-input" onchange="previewAdminImage(event, 'teamMemberImagePreview_<%= index %>')">
+                                          </div>
+                                          <div class="space-y-3">
+                                              <div><label class="block text-xs font-medium text-gray-700" for="team-name-<%= index %>">Name</label><input id="team-name-<%= index %>" type="text" name="teamMembers[<%= index %>].name" value="<%= member.name ?? '' %>" class="wysiwyg-input text-xl font-semibold w-full text-center" placeholder="Member Name"></div>
+                                              <div><label class="block text-xs font-medium text-gray-700" for="team-title-<%= index %>">Title</label><input id="team-title-<%= index %>" type="text" name="teamMembers[<%= index %>].title" value="<%= member.title ?? '' %>" class="wysiwyg-input text-gray-600 w-full text-center" placeholder="Member Title"></div>
+                                              <div><label class="block text-xs font-medium text-gray-700" for="team-bio-<%= index %>">Bio</label><textarea id="team-bio-<%= index %>" name="teamMembers[<%= index %>].bio" rows="3" class="wysiwyg-textarea text-gray-600 w-full text-sm" placeholder="Short bio..."><%= member.bio ?? '' %></textarea></div>
+                                              <div><label class="block text-xs font-medium text-gray-700" for="team-email-<%= index %>">Email</label><input id="team-email-<%= index %>" type="email" name="teamMembers[<%= index %>].email" value="<%= member.email ?? '' %>" class="wysiwyg-input text-sm w-full text-center" placeholder="member@example.com"></div>
+                                              <div><label class="block text-xs font-medium text-gray-700" for="team-tenure-<%= index %>">Tenure</label><input id="team-tenure-<%= index %>" type="text" name="teamMembers[<%= index %>].tenure" value="<%= member.tenure ?? '' %>" class="wysiwyg-input text-sm w-full text-center" placeholder="e.g. Since 2022"></div>
+                                              <div><label class="block text-xs font-medium text-gray-700" for="team-achievements-<%= index %>">Achievements</label><textarea id="team-achievements-<%= index %>" name="teamMembers[<%= index %>].achievements" rows="3" class="wysiwyg-textarea text-sm w-full" placeholder="Key achievements..."><%= member.achievements ?? '' %></textarea></div>
+                                              <div><label class="block text-xs font-medium text-gray-700" for="team-link-<%= index %>">Link Slug</label><input id="team-link-<%= index %>" type="text" name="teamMembers[<%= index %>].link" value="<%= member.link ?? '' %>" class="wysiwyg-input text-sm w-full text-center" placeholder="/administration/person/slug"></div>
+                                          </div>
+                                          <button type="button" class="remove-item-btn" data-index="<%= index %>"><i class="fas fa-times"></i></button>
+                                      </div>
+                                    <% }) %>
+                                    <% if (!leadershipData.leadershipSection?.teamMembers || leadershipData.leadershipSection.teamMembers.length === 0) { %>
+                                        <p class="text-gray-500 italic col-span-full text-center">No team members defined yet.</p>
+                                    <% } %>
+                                </div>
+                                <div class="add-item-container max-w-5xl mx-auto">
+                                    <button type="button" id="add-member-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 text-sm">
+                                        <i class="fas fa-plus mr-1"></i> Add Team Member
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                    </main>
+
+                    <button type="submit" id="save-changes-btn" class="bg-indigo-600 text-white py-3 px-6 rounded-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition transform hover:scale-105">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+
+<script>
+    // Generic image preview function
+    function previewAdminImage(event, previewElementId, backgroundElementId) {
+        const reader = new FileReader();
+        const file = event.target.files[0];
+
+        reader.onload = function() {
+            const outputImg = document.getElementById(previewElementId);
+            if (outputImg) {
+                outputImg.src = reader.result;
+            }
+            if (backgroundElementId) {
+                const bgElement = document.getElementById(backgroundElementId);
+                if (bgElement) {
+                    bgElement.style.backgroundImage = `url('${reader.result}')`;
+                }
+            }
+        };
+
+        if (file) {
+            reader.readAsDataURL(file);
+        } else {
+            // If no file is selected (e.g., user clears the selection),
+            // revert to original or default if you have stored it.
+            // For simplicity, this example doesn't revert to a stored original on clear,
+            // but you could store the original path in a data attribute on the img tag.
+            // For now, if cleared, it won't change from the last valid preview or loaded image.
+        }
+    }
+
+    // Team Member Add/Remove Logic (from your provided EJS)
+    document.addEventListener('DOMContentLoaded', () => {
+        const membersContainer = document.getElementById('team-members-container');
+        const addMemberBtn = document.getElementById('add-member-btn');
+
+        const updateMemberIndices = () => {
+            const memberItems = membersContainer.querySelectorAll('.team-member-edit');
+            const memberCount = memberItems.length;
+            memberItems.forEach((item, index) => {
+                item.querySelectorAll('[name^="teamMembers["]').forEach(input => {
+                    const nameAttr = input.getAttribute('name');
+                    input.name = nameAttr.replace(/\[\d+\]/, `[${index}]`);
+                     if(input.id){
+                        const oldIdBase = input.id.substring(0, input.id.lastIndexOf('-') + 1);
+                        input.id = `${oldIdBase}${index}`;
+                        const label = item.querySelector(`label[for^="${oldIdBase}"]`);
+                        if(label) label.setAttribute('for', input.id);
+                    }
+                });
+                item.querySelectorAll('[name^="teamMemberImage_"]').forEach(input => {
+                    const oldIdBaseImg = input.id.substring(0, input.id.lastIndexOf('_') + 1);
+                    input.name = `teamMemberImage_${index}`;
+                    input.id = `${oldIdBaseImg}${index}`;
+
+                    // Update preview function call if needed, or rely on IDs for preview function
+                    const imgPreviewTag = item.querySelector('img[id^="teamMemberImagePreview_"]');
+                    if(imgPreviewTag) imgPreviewTag.id = `teamMemberImagePreview_${index}`;
+                    
+                    input.setAttribute('onchange', `previewAdminImage(event, 'teamMemberImagePreview_${index}')`);
+
+
+                    const label = item.querySelector(`label[for^="${oldIdBaseImg.replace('File','')}"]`);
+                     if(label) label.setAttribute('for', input.id);
+                });
+                const removeBtn = item.querySelector('.remove-item-btn');
+                if(removeBtn) removeBtn.dataset.index = index;
+            });
+            const noMembersMsg = document.querySelector('#team-members-container > p.text-gray-500');
+            if (noMembersMsg) noMembersMsg.style.display = memberCount === 0 ? 'block' : 'none';
+        };
+
+        if(addMemberBtn && membersContainer) {
+            addMemberBtn.addEventListener('click', () => {
+                const currentMemberCount = membersContainer.querySelectorAll('.team-member-edit').length;
+                const newMemberItem = document.createElement('div');
+                newMemberItem.className = 'team-member-edit p-4 text-center';
+                newMemberItem.innerHTML = `
+                    <img id="teamMemberImagePreview_${currentMemberCount}" src="https://via.placeholder.com/128x128?text=New" alt="New Member Image" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border preview-image-small">
+                    <div class="wysiwyg-file-input-container max-w-xs mx-auto mb-4">
+                        <label class="block text-xs font-medium text-gray-700 mb-1" for="teamMemberImageFile_${currentMemberCount}">Upload Image</label>
+                        <input type="file" id="teamMemberImageFile_${currentMemberCount}" name="teamMemberImage_${currentMemberCount}" accept="image/*" class="wysiwyg-file-input" onchange="previewAdminImage(event, 'teamMemberImagePreview_${currentMemberCount}')">
+                    </div>
+                    <div class="space-y-3">
+                        <div><label class="block text-xs font-medium text-gray-700" for="team-name-${currentMemberCount}">Name</label><input id="team-name-${currentMemberCount}" type="text" name="teamMembers[${currentMemberCount}].name" value="" placeholder="Name" class="wysiwyg-input text-xl font-semibold w-full text-center"></div>
+                        <div><label class="block text-xs font-medium text-gray-700" for="team-title-${currentMemberCount}">Title</label><input id="team-title-${currentMemberCount}" type="text" name="teamMembers[${currentMemberCount}].title" value="" placeholder="Title" class="wysiwyg-input text-gray-600 w-full text-center"></div>
+                        <div><label class="block text-xs font-medium text-gray-700" for="team-bio-${currentMemberCount}">Bio</label><textarea id="team-bio-${currentMemberCount}" name="teamMembers[${currentMemberCount}].bio" rows="3" placeholder="Short Bio..." class="wysiwyg-textarea text-gray-600 w-full text-sm"></textarea></div>
+                        <div><label class="block text-xs font-medium text-gray-700" for="team-email-${currentMemberCount}">Email</label><input id="team-email-${currentMemberCount}" type="email" name="teamMembers[${currentMemberCount}].email" value="" placeholder="Email" class="wysiwyg-input text-sm w-full text-center"></div>
+                        <div><label class="block text-xs font-medium text-gray-700" for="team-tenure-${currentMemberCount}">Tenure</label><input id="team-tenure-${currentMemberCount}" type="text" name="teamMembers[${currentMemberCount}].tenure" value="" placeholder="e.g., Since 2021" class="wysiwyg-input text-sm w-full text-center"></div>
+                        <div><label class="block text-xs font-medium text-gray-700" for="team-achievements-${currentMemberCount}">Achievements</label><textarea id="team-achievements-${currentMemberCount}" name="teamMembers[${currentMemberCount}].achievements" rows="3" placeholder="Key Achievements..." class="wysiwyg-textarea text-sm w-full"></textarea></div>
+                        <div><label class="block text-xs font-medium text-gray-700" for="team-link-${currentMemberCount}">Link Slug</label><input id="team-link-${currentMemberCount}" type="text" name="teamMembers[${currentMemberCount}].link" value="" placeholder="/administration/person/..." class="wysiwyg-input text-sm w-full text-center"></div>
+                    </div>
+                    <button type="button" class="remove-item-btn" data-index="${currentMemberCount}"><i class="fas fa-times"></i></button>
+                `;
+                const noMembersMsg = membersContainer.querySelector('p.text-gray-500');
+                if (noMembersMsg) noMembersMsg.style.display = 'none'; // Hide "no members" message
+                membersContainer.appendChild(newMemberItem);
+                // updateMemberIndices(); // Already called after append usually, but good to ensure
+            });
+        }
+
+        if(membersContainer) {
+            membersContainer.addEventListener('click', (e) => {
+                const removeBtn = e.target.closest('.remove-item-btn');
+                if (removeBtn) {
+                    if (confirm('Are you sure you want to remove this team member?')) {
+                        removeBtn.closest('.team-member-edit').remove();
+                        updateMemberIndices();
+                    }
+                }
+            });
+        }
+        updateMemberIndices(); // Initial setup
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,477 @@
+<%- include('partials/header', { siteLogo: homeData.siteLogo }) %>
+<style>
+  .images-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  .story-image {
+    width: 100%;
+    height: 16rem;
+    object-fit: cover;
+  }
+  .embed-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+  }
+  .embed-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  
+  #hero > div:first-child {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #imageModal, #morePhotosModal {
+    display: none;
+  }
+  .max-w-90\% {
+    max-width: 90%;
+  }
+  .max-h-90\% {
+    max-height: 90%;
+  }
+  .more-photos-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  .more-photos-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+  }
+  #morePhotosContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    width: 100%;
+    max-width: 800px;
+    height: 90vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    margin: auto;
+  }
+  #morePhotosContainer img {
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  .view-more-btn {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(to right, #4f46e5, #3b82f6);
+    color: white;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background 0.3s, transform 0.2s;
+  }
+  .view-more-btn:hover {
+    background: linear-gradient(to right, #3b82f6, #4f46e5);
+    transform: translateY(-2px);
+  }
+  .story-card.hidden {
+    display: none;
+  }
+  .embed-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 16rem;
+    background-color: #1a1a1a;
+    color: #ccc;
+    text-align: center;
+    padding: 1rem;
+  }
+</style>
+
+<!-- Navigation Bar (if not in header partial) -->
+<nav class="bg-white shadow-lg sticky top-0 z-30">
+  <div class="container mx-auto px-4">
+    <div class="flex justify-between items-center py-4">
+      <div class="flex items-center">
+        <img src="<%= homeData.siteLogo %>" alt="PMAFA Logo" class="h-12 w-auto mr-3">
+        <span class="text-xl font-bold text-gray-800">PMAFA</span>
+      </div>
+      <div class="hidden md:flex space-x-6">
+        <a href="#home" class="text-gray-700 hover:text-indigo-600 transition">Home</a>
+        <a href="#featured-stories" class="text-gray-700 hover:text-indigo-600 transition">Stories</a>
+        <a href="#testimonials" class="text-gray-700 hover:text-indigo-600 transition">Testimonials</a>
+        <a href="#contact" class="text-gray-700 hover:text-indigo-600 transition">Contact</a>
+      </div>
+      <button class="md:hidden">
+        <i class="fas fa-bars text-gray-700"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <!-- Hero Section -->
+<section id="hero" class="relative flex items-center justify-center overflow-hidden text-white">
+  <!-- Background image -->
+  <img src="<%= homeData.hero.backgroundImage %>" alt="Hero" class="w-full h-auto object-cover">
+
+  <!-- Gradient overlay -->
+  <div class="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-indigo-900/60 z-10"></div>
+
+  <!-- Hero text -->
+  <div class="absolute inset-0 flex flex-col items-center justify-center text-center z-20 px-4">
+    <h1 class="text-4xl md:text-6xl font-bold mb-6 text-shadow-lg drop-shadow-2xl">
+      <%= homeData.hero.title %>
+    </h1>
+    <p class="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed text-shadow-md drop-shadow-lg">
+      <%= homeData.hero.subtitle %>
+    </p>
+  </div>
+</section>
+
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <a href="#featured-stories" class="text-white opacity-70 hover:opacity-100 transition">
+        <i class="fas fa-chevron-down text-2xl"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- Featured Stories Section -->
+  <section id="featured-stories" class="py-20 md:py-24 bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-100 relative overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute inset-0 opacity-20 z-[-1]">
+      <div class="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+      <div class="absolute top-0 -right-4 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+      <div class="absolute -bottom-8 left-20 w-72 h-72 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+    </div>
+    <!-- Geometric stripes -->
+    <div class="absolute inset-0 opacity-5 z-[-1]">
+      <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 via-blue-500 to-purple-500 transform -skew-y-1"></div>
+      <div class="absolute top-16 left-0 w-full h-1 bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 transform skew-y-1"></div>
+      <div class="absolute bottom-16 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 transform -skew-y-1"></div>
+      <div class="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-blue-400 to-purple-400 transform skew-y-1"></div>
+    </div>
+    <div class="container mx-auto px-4 relative z-10 max-w-6xl">
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-6">
+          <i class="fas fa-star text-2xl text-indigo-600"></i>
+        </div>
+        <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+          <%= homeData.featuredStories.title %>
+        </h2>
+        <div class="w-24 h-1 bg-gradient-to-r from-indigo-500 to-blue-500 mx-auto mb-6 rounded-full"></div>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto"><%= homeData.featuredStories.subtitle %></p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8" id="stories-grid">
+        <% (homeData.featuredStories.stories || []).slice().reverse().forEach((story, index) => { %>
+          <div class="story-card bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 border border-gray-100 <%= index >= 2 ? 'hidden' : '' %>">
+            <div class="images-container p-2">
+              <% if (story.contentType === 'embed' && story.embedLink) { %>
+                <div class="embed-container">
+                  <% if (story.embedLink.includes('youtube.com') || story.embedLink.includes('youtu.be')) { %>
+                    <iframe src="<%= story.embedLink.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/') %>" allowfullscreen></iframe>
+                  <% } else if (story.embedLink.includes('facebook.com')) { %>
+  <div class="fb-post" data-href="<%= story.embedLink %>" data-width="auto" data-show-text="true"></div>
+<% } else { %>
+                    <div class="embed-fallback">Embed not supported for this link.</div>
+                  <% } %>
+                </div>
+              <% } else { %>
+                <div class="grid grid-cols-2 gap-2">
+                  <% const maxDisplay = 4; %>
+                  <% const imagesToShow = (story.images || []).slice(0, maxDisplay); %>
+                  <% imagesToShow.forEach((image, imgIndex) => { %>
+                    <div class="relative">
+                      <img src="<%= image %>" alt="<%= story.title %>" class="story-image cursor-pointer rounded-md" onclick="openModal(this)">
+                      <% if (imgIndex === imagesToShow.length - 1 && story.images && story.images.length > maxDisplay) { %>
+                        <button class="more-photos-btn" onclick="openMorePhotosModal(<%= JSON.stringify(story.images) %>, '<%= story.title %>')">+<%= story.images.length - maxDisplay %></button>
+                      <% } %>
+                    </div>
+                  <% }) %>
+                  <% if (!story.images || story.images.length === 0) { %>
+                    <img src="/images/default-story.jpg" alt="<%= story.title %>" class="story-image col-span-2 cursor-pointer rounded-md" onclick="openModal(this)">
+                  <% } %>
+                </div>
+              <% } %>
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-semibold mb-2 text-gray-800"><%= story.title %></h3>
+              <p class="text-gray-600 mb-4 leading-relaxed"><%= story.description %></p>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+      <% if ((homeData.featuredStories.stories || []).length > 2) { %>
+        <div class="text-center mt-8">
+          <button class="view-more-btn" onclick="showMoreStories()">View More Stories</button>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="py-20 md:py-24 bg-gradient-to-br from-slate-100 via-gray-50 to-blue-100 relative overflow-hidden">
+    <!-- Decorative elements -->
+    <div class="absolute inset-0 opacity-15 z-[-1]">
+      <div class="absolute top-10 left-10 w-64 h-64 bg-gradient-to-br from-blue-300 to-indigo-400 rounded-full mix-blend-multiply filter blur-2xl"></div>
+      <div class="absolute bottom-10 right-10 w-64 h-64 bg-gradient-to-br from-purple-300 to-blue-400 rounded-full mix-blend-multiply filter blur-2xl"></div>
+    </div>
+    <!-- Diagonal stripes pattern -->
+    <div class="absolute inset-0 opacity-5 z-[-1]">
+      <svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="diagonal-stripes" patternUnits="userSpaceOnUse" width="40" height="40">
+            <path d="M0,40 L40,0 M-10,10 L10,-10 M30,50 L50,30" stroke="#4f46e5" stroke-width="2"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#diagonal-stripes)"/>
+      </svg>
+    </div>
+    <div class="container mx-auto px-4 relative z-10 max-w-6xl">
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-6">
+          <i class="fas fa-quote-left text-2xl text-indigo-600"></i>
+        </div>
+        <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+          <%= homeData.testimonials.title %>
+        </h2>
+        <div class="w-24 h-1 bg-gradient-to-r from-indigo-500 to-blue-500 mx-auto mb-6 rounded-full"></div>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto"><%= homeData.testimonials.subtitle %></p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8">
+        <% homeData.testimonials.testimonials.forEach(testimonial => { %>
+          <div class="bg-white p-6 rounded-xl shadow-xl hover:shadow-2xl transition-shadow duration-300 border border-gray-100 relative">
+            <div class="text-indigo-600 text-4xl absolute -top-5 left-6 opacity-50">"</div>
+            <p class="text-gray-700 mb-6 pt-4 leading-relaxed text-lg"><%= testimonial.quote %></p>
+            <div class="flex items-center">
+              <div class="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-indigo-200">
+                <img src="<%= testimonial.image %>" alt="<%= testimonial.name %>" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-800"><%= testimonial.name %></h4>
+                <p class="text-sm text-gray-500"><%= testimonial.origin %></p>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Image Modal -->
+  <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50" onclick="closeModal(event)">
+    <span class="absolute top-4 right-4 text-white text-3xl cursor-pointer" onclick="closeModal()">&times;</span>
+    <button class="absolute left-4 text-white text-4xl" onclick="prevImage()">&lt;</button>
+    <img id="modalImage" class="max-w-90% max-h-90% object-contain">
+    <button class="absolute right-4 text-white text-4xl" onclick="nextImage()">&gt;</button>
+  </div>
+
+  <!-- More Photos Modal -->
+  <div id="morePhotosModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50" onclick="closeMorePhotosModal(event)">
+    <span class="absolute top-4 right-4 text-white text-3xl cursor-pointer" onclick="closeMorePhotosModal()">&times;</span>
+    <div id="morePhotosContainer"></div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-12 border-t-4 border-indigo-500">
+  <div class="container mx-auto text-center px-4">
+    <div class="mb-6">
+      <img src="<%= homeData.siteLogo %>" alt="PMAFA Logo" class="h-16 w-auto mx-auto mb-4">
+      <h3 class="text-2xl font-bold mb-2">PMAFA</h3>
+      <p class="text-gray-300">Committed to Community Excellence</p>
+    </div>
+    <div class="border-t border-gray-700 pt-6">
+      <p class="text-gray-400"><%= homeData.footer.copyright %></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  let currentImages = [];
+  let currentIndex = 0;
+
+  function openModal(img) {
+    const storyCard = img.closest('.story-card');
+    const images = Array.from(storyCard.querySelectorAll('.story-image')).map(i => i.src);
+    currentImages = images.length > 0 ? images : ['/images/default-story.jpg'];
+    currentIndex = images.indexOf(img.src);
+    if (currentIndex === -1) currentIndex = 0;
+    showImage();
+    document.getElementById('imageModal').style.display = 'flex';
+    document.getElementById('morePhotosModal').style.display = 'none';
+  }
+
+  function closeModal(event) {
+    if (event && event.target.id !== 'imageModal') return;
+    document.getElementById('imageModal').style.display = 'none';
+    currentImages = [];
+    currentIndex = 0;
+  }
+
+  function showImage() {
+    document.getElementById('modalImage').src = currentImages[currentIndex];
+  }
+
+  function prevImage() {
+    currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+    showImage();
+  }
+
+  function nextImage() {
+    currentIndex = (currentIndex + 1) % currentImages.length;
+    showImage();
+  }
+
+  function openMorePhotosModal(images, title) {
+    const container = document.getElementById('morePhotosContainer');
+    container.innerHTML = ''; // Clear previous content
+    images.forEach((image, index) => {
+      const img = document.createElement('img');
+      img.src = image;
+      img.alt = `${title} - Photo ${index + 1}`;
+      img.onclick = () => {
+        currentImages = images;
+        currentIndex = index;
+        showImage();
+        document.getElementById('morePhotosModal').style.display = 'none';
+        document.getElementById('imageModal').style.display = 'flex';
+      };
+      container.appendChild(img);
+    });
+    document.getElementById('morePhotosModal').style.display = 'flex';
+    document.getElementById('imageModal').style.display = 'none';
+  }
+
+  function closeMorePhotosModal(event) {
+    if (event && event.target.id !== 'morePhotosModal') return;
+    document.getElementById('morePhotosModal').style.display = 'none';
+  }
+
+  function showMoreStories() {
+    const hiddenStories = document.querySelectorAll('.story-card.hidden');
+    hiddenStories.forEach(story => story.classList.remove('hidden'));
+    const viewMoreBtn = document.querySelector('.view-more-btn');
+    if (viewMoreBtn) viewMoreBtn.style.display = 'none';
+    
+    // Tell Facebook's SDK to re-scan the page for new embeds
+    if (window.FB) {
+      window.FB.XFBML.parse();
+    }
+  }
+
+  // Facebook SDK Initialization
+  window.fbAsyncInit = function() {
+    FB.init({
+      xfbml      : true,  // Tells the SDK to parse social plugins on page load
+      version    : 'v19.0' // It's best practice to use a specific API version
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "https://connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<style>
+/* Custom animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 1s ease-out 0.3s both;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-bounce {
+  animation: bounce 2s infinite;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Enhanced text shadows for hero */
+.text-shadow-lg {
+  text-shadow: 2px 4px 8px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.3);
+}
+
+.text-shadow-md {
+  text-shadow: 1px 2px 4px rgba(0,0,0,0.6);
+}
+
+/* Smooth hover transitions */
+.hover\:shadow-2xl:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Hero background fix - FULL HEIGHT, NO ZOOM */
+#hero {
+  background-attachment: scroll !important;
+  background-size: contain !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-color: #f8fafc;
+}
+</style>
+</body>
+</html>

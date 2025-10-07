@@ -1,0 +1,428 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/gallery.css">
+  <style>
+    .wysiwyg-input, .wysiwyg-textarea { background-color: rgba(239, 246, 255, 0.3); border: 1px dashed rgba(0, 0, 0, 0.2); padding: 2px 4px; margin: 0 0 2px 0; display: inline-block; width: auto; min-width: 100px; border-radius: 3px; color: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; vertical-align: baseline; }
+    .wysiwyg-textarea { width: 100%; min-height: 60px; display: block; resize: vertical; }
+    .wysiwyg-file-input-container { border: 1px dashed rgba(0, 0, 0, 0.2); padding: 10px; margin-top: 10px; border-radius: 5px; background-color: rgba(239, 246, 255, 0.3); }
+    .wysiwyg-file-input-container img.preview-image { max-height: 150px; margin-bottom: 5px; border: 1px solid #eee; border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 10px; }
+    .wysiwyg-file-input-container img.preview-image-testimonial { max-height: 48px; width: 48px; border-radius: 50%; object-fit: cover; }
+    .wysiwyg-file-input { display: inline-block; width: auto; font-size: 0.9em; vertical-align: middle; }
+    .wysiwyg-input:hover, .wysiwyg-textarea:hover, .wysiwyg-file-input-container:hover { border: 1px dashed #4f46e5; background-color: rgba(224, 231, 255, 0.4); }
+    .wysiwyg-file-input::file-selector-button { font-size: 0.8em; padding: 4px 8px; margin-right: 5px; border-radius: 3px; border: 1px solid #ccc; background-color: #f0f0f0; cursor: pointer; }
+    .remove-item-btn { position: absolute; top: 8px; right: 8px; background-color: rgba(255, 0, 0, 0.6); color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.8em; cursor: pointer; z-index: 10; border: none; line-height: 0; }
+    .remove-item-btn:hover { background-color: rgba(255, 0, 0, 0.8); }
+    .add-item-container { text-align: center; padding: 15px; border-top: 1px solid #eee; margin-top: 15px; }
+    #save-changes-btn { position: fixed; bottom: 20px; right: 20px; z-index: 100; }
+    .gallery-item-edit { position: relative; border: 1px solid #eee; border-radius: 0.5rem; overflow: hidden; background-color: #f9fafb; margin-bottom: 1rem; }
+    .category-item { position: relative; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; background-color: #fff; }
+    .category-item input { width: calc(100% - 40px); }
+    .subcategory-item { position: relative; padding: 6px 8px 6px 24px; border: 1px solid #e5e7eb; border-radius: 4px; margin-bottom: 4px; background-color: #f9fafb; }
+    .subcategory-item input { width: calc(100% - 40px); }
+    .remove-category-btn, .remove-subcategory-btn { position: absolute; top: 8px; right: 8px; background-color: rgba(255, 0, 0, 0.6); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7em; cursor: pointer; border: none; }
+    .remove-category-btn:hover, .remove-subcategory-btn:hover { background-color: rgba(255, 0, 0, 0.8); }
+    .add-subcategory-btn { margin-left: 24px; font-size: 0.9em; }
+    .admin-nav-scroll {
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 1rem;
+    }
+    .admin-nav-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .admin-nav-scroll::-webkit-scrollbar-track {
+      background: rgba(67, 56, 202, 0.2);
+      border-radius: 10px;
+    }
+    .admin-nav-scroll::-webkit-scrollbar-thumb {
+      background-color: rgba(79, 70, 229, 0.7);
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background-clip: content-box;
+    }
+    .admin-nav-scroll::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(67, 56, 202, 1);
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div class="flex h-screen">
+    <%- include('partials/sidebar', { currentPage: currentPage }) %>
+    <div class="flex-1 overflow-y-auto">
+      <% if (typeof galleryData === 'undefined' || !galleryData) { %>
+        <div class="p-10 bg-red-100 border border-red-400 text-red-700" role="alert">
+          <strong class="font-bold">Error:</strong> Gallery page data is missing.
+        </div>
+      <% } else { %>
+        <form action="/admin/edit-gallery" method="POST" enctype="multipart/form-data" id="edit-gallery-form">
+          <main>
+            <section id="gallery-hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+              <div class="absolute inset-0 bg-contain bg-no-repeat bg-center"  style="background-image: url('<%= galleryData.hero?.backgroundImage ?? '' %>')"></div>
+              <div class="absolute inset-0 hero-gradient"></div>
+              <div class="container mx-auto px-4 relative z-10 text-center">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+                  <input type="text" name="hero.title" value="<%= galleryData.hero?.title ?? '' %>" class="wysiwyg-input text-center text-4xl md:text-5xl lg:text-6xl font-bold text-white bg-transparent border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0" style="width: 80%;">
+                </h1>
+                <p class="text-xl md:text-2xl text-white mb-10 max-w-3xl mx-auto">
+                  <textarea name="hero.subtitle" rows="2" class="wysiwyg-textarea text-center text-xl md:text-2xl text-white bg-transparent border-dashed border-gray-400 hover:border-white focus:border-white focus:ring-0 w-full max-w-3xl mx-auto"><%= galleryData.hero?.subtitle ?? '' %></textarea>
+                </p>
+                <a href="<%= galleryData.hero?.buttonLink ?? '#' %>" class="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-full text-lg font-medium transition transform hover:scale-105 shadow-lg inline-block">
+                  <input type="text" name="hero.buttonText" value="<%= galleryData.hero?.buttonText ?? '' %>" class="wysiwyg-input bg-transparent border-none text-center p-0 text-lg font-medium">
+                </a>
+                <div class="mt-8 max-w-md mx-auto">
+                  <div class="wysiwyg-file-input-container bg-black bg-opacity-30 text-left">
+                    <label class="block text-sm font-medium text-gray-200 mb-1" for="heroBackgroundImage">Edit Hero Background Image</label>
+                    <% if (galleryData.hero?.backgroundImage) { %>
+                      <div class="mb-1 inline-block"><img src="<%= galleryData.hero.backgroundImage %>" alt="Current Hero Background" class="preview-image"></div>
+                    <% } %>
+                    <input type="file" id="heroBackgroundImage" name="heroBackgroundImage" accept="image/*" class="wysiwyg-file-input text-gray-300">
+                    <p class="mt-1 text-xs text-gray-400 block">Upload new image. Leave empty to keep current.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+                <a href="#gallery" class="text-white opacity-70 hover:opacity-100 transition"><i class="fas fa-chevron-down text-2xl"></i></a>
+              </div>
+            </section>
+
+            <section id="gallery" class="py-16 md:py-24 bg-white">
+              <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                  <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    <input type="text" name="gallerySection.title" value="<%= galleryData.gallerySection?.title ?? '' %>" class="wysiwyg-input text-center text-3xl md:text-4xl font-bold">
+                  </h2>
+                  <div class="w-24 h-1 bg-indigo-600 mx-auto mb-6"></div>
+                  <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    <textarea name="gallerySection.subtitle" rows="2" class="wysiwyg-textarea text-center text-lg text-gray-600 w-full max-w-3xl mx-auto"><%= galleryData.gallerySection?.subtitle ?? '' %></textarea>
+                  </p>
+                </div>
+
+                <!-- Category Management Section -->
+                <div class="mb-12 bg-gray-50 p-6 rounded-lg shadow-sm">
+                  <h3 class="text-2xl font-semibold mb-4">Manage Categories</h3>
+                  <p class="text-sm text-gray-500 mb-4">Add, edit, or remove categories and subcategories for gallery items.</p>
+                  <div id="category-items-container" class="space-y-4">
+                    <% galleryData.gallerySection?.categories?.forEach((cat, catIndex) => { %>
+                      <div class="category-item">
+                        <input type="text" name="gallerySection.categories[<%= catIndex %>].name" value="<%= cat.name %>" class="wysiwyg-input capitalize" placeholder="Category name">
+                        <button type="button" class="remove-category-btn" data-cat-index="<%= catIndex %>"><i class="fas fa-times"></i></button>
+                        <div class="subcategories-container ml-4 mt-2 space-y-2">
+                          <% cat.subcategories?.forEach((subcat, subcatIndex) => { %>
+                            <div class="subcategory-item">
+                              <input type="text" name="gallerySection.categories[<%= catIndex %>].subcategories" value="<%= subcat %>" class="wysiwyg-input capitalize" placeholder="Subcategory name">
+                              <button type="button" class="remove-subcategory-btn" data-cat-index="<%= catIndex %>" data-subcat-index="<%= subcatIndex %>"><i class="fas fa-times"></i></button>
+                            </div>
+                          <% }) %>
+                        </div>
+                        <div class="mt-2">
+                          <button type="button" class="add-subcategory-btn text-blue-600 hover:text-blue-800 text-sm" data-cat-index="<%= catIndex %>">
+                            <i class="fas fa-plus mr-1"></i> Add Subcategory
+                          </button>
+                        </div>
+                      </div>
+                    <% }) %>
+                    <% if (!galleryData.gallerySection?.categories || galleryData.gallerySection.categories.length === 0) { %>
+                      <p class="text-gray-500 italic">No categories defined.</p>
+                    <% } %>
+                  </div>
+                  <div class="mt-4 text-center">
+                    <button type="button" id="add-category-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 text-sm">
+                      <i class="fas fa-plus mr-1"></i> Add Category
+                    </button>
+                  </div>
+                </div>
+
+                <div id="gallery-items-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <% galleryData.gallerySection?.items?.forEach((item, index) => { %>
+                    <div class="gallery-item-edit p-4">
+                      <img src="<%= item.image ?? '/images/placeholder-gallery.jpg' %>" alt="Current Image" class="w-full h-48 object-cover rounded-md mb-4">
+                      <button type="button" class="remove-item-btn" data-index="<%= index %>"><i class="fas fa-times"></i></button>
+                      <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input type="text" name="items[<%= index %>].title" value="<%= item.title ?? '' %>" class="wysiwyg-input w-full">
+                      </div>
+                      <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea name="items[<%= index %>].description" rows="3" class="wysiwyg-textarea w-full"><%= item.description ?? '' %></textarea>
+                      </div>
+                      <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <select name="items[<%= index %>].category" class="wysiwyg-input w-full category-select capitalize">
+                          <% galleryData.gallerySection?.categories?.forEach((cat) => { %>
+                            <option value="<%= cat.name %>" <%= item.category === cat.name ? 'selected' : '' %>><%= cat.name %></option>
+                          <% }) %>
+                        </select>
+                      </div>
+                      <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+                        <select name="items[<%= index %>].subcategory" class="wysiwyg-input w-full subcategory-select capitalize">
+                          <option value="" <%= !item.subcategory ? 'selected' : '' %>>None</option>
+                          <% const subcats = galleryData.gallerySection?.categories?.find(c => c.name === item.category)?.subcategories || []; %>
+                          <% subcats.forEach((subcat) => { %>
+                            <option value="<%= subcat %>" <%= item.subcategory === subcat ? 'selected' : '' %>><%= subcat %></option>
+                          <% }) %>
+                        </select>
+                      </div>
+                      <div class="wysiwyg-file-input-container">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="galleryImage_<%= index %>">Replace Image</label>
+                        <input type="file" id="galleryImage_<%= index %>" name="galleryImage_<%= index %>" accept="image/*" class="wysiwyg-file-input">
+                        <p class="mt-1 text-xs text-gray-500">Upload new image. Leave empty to keep current.</p>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+
+                <div class="add-item-container">
+                  <button type="button" id="add-gallery-item-btn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+                    <i class="fas fa-plus mr-1"></i> Add Gallery Item
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <footer class="bg-gray-900 text-white ">
+              
+                <div class="mt-12 border-t border-gray-800 pt-8 pb-8 text-center">
+                  <p class="text-gray-400">
+                    <input type="text" name="footer.copyright" value="<%= galleryData.footer?.copyright ?? '' %>" class="wysiwyg-input text-gray-400 bg-transparent border-dashed border-gray-400 text-center">
+                  </p>
+                </div>
+              </div>
+            </footer>
+          </main>
+
+          <button type="submit" id="save-changes-btn" class="bg-green-600 text-white py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition transform hover:scale-105">
+            Save Changes
+          </button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const galleryItemsContainer = document.getElementById('gallery-items-container');
+      const addGalleryItemBtn = document.getElementById('add-gallery-item-btn');
+      const categoryItemsContainer = document.getElementById('category-items-container');
+      const addCategoryBtn = document.getElementById('add-category-btn');
+      let galleryItemIndex = <%= galleryData.gallerySection?.items?.length || 0 %>;
+      let categoryIndex = <%= galleryData.gallerySection?.categories?.length || 0 %>;
+
+      // Function to get current categories and subcategories
+      const getCurrentCategories = () => {
+        const categoryItems = categoryItemsContainer.querySelectorAll('.category-item');
+        const categories = [];
+        categoryItems.forEach((item, index) => {
+          const nameInput = item.querySelector(`input[name="gallerySection.categories[${index}].name"]`);
+          const subcatInputs = item.querySelectorAll(`input[name="gallerySection.categories[${index}].subcategories"]`);
+          if (nameInput && nameInput.value.trim()) {
+            const subcategories = Array.from(subcatInputs)
+              .map(input => input.value.toLowerCase().trim())
+              .filter(val => val !== '');
+            categories.push({
+              name: nameInput.value.toLowerCase().trim(),
+              subcategories
+            });
+          }
+        });
+        return categories;
+      };
+
+      // Function to update all category and subcategory dropdowns
+      const updateDropdowns = () => {
+        const categories = getCurrentCategories();
+        const itemEdits = galleryItemsContainer.querySelectorAll('.gallery-item-edit');
+        itemEdits.forEach((itemEdit, itemIndex) => {
+          const categorySelect = itemEdit.querySelector(`select[name="items[${itemIndex}].category"]`);
+          const subcategorySelect = itemEdit.querySelector(`select[name="items[${itemIndex}].subcategory"]`);
+          if (!categorySelect || !subcategorySelect) return;
+
+          const currentCategory = categorySelect.value;
+          const currentSubcategory = subcategorySelect.value;
+
+          // Update category dropdown
+          categorySelect.innerHTML = categories.map(cat => `
+            <option value="${cat.name}" ${cat.name === currentCategory ? 'selected' : ''}>
+              ${cat.name.charAt(0).toUpperCase() + cat.name.slice(1)}
+            </option>
+          `).join('');
+
+          // Update subcategory dropdown based on selected category
+          const selectedCategory = categories.find(c => c.name === categorySelect.value) || { subcategories: [] };
+          subcategorySelect.innerHTML = `
+            <option value="" ${!currentSubcategory ? 'selected' : ''}>None</option>
+            ${selectedCategory.subcategories.map(subcat => `
+              <option value="${subcat}" ${subcat === currentSubcategory ? 'selected' : ''}>
+                ${subcat.charAt(0).toUpperCase() + subcat.slice(1)}
+              </option>
+            `).join('')}
+          `;
+        });
+      };
+
+      // Add new category
+      addCategoryBtn.addEventListener('click', () => {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'category-item';
+        categoryDiv.innerHTML = `
+          <input type="text" name="gallerySection.categories[${categoryIndex}].name" value="" class="wysiwyg-input capitalize" placeholder="Category name">
+          <button type="button" class="remove-category-btn" data-cat-index="${categoryIndex}"><i class="fas fa-times"></i></button>
+          <div class="subcategories-container ml-4 mt-2 space-y-2"></div>
+          <div class="mt-2">
+            <button type="button" class="add-subcategory-btn text-blue-600 hover:text-blue-800 text-sm" data-cat-index="${categoryIndex}">
+              <i class="fas fa-plus mr-1"></i> Add Subcategory
+            </button>
+          </div>
+        `;
+        categoryItemsContainer.appendChild(categoryDiv);
+        categoryIndex++;
+        updateDropdowns();
+      });
+
+      // Add new subcategory
+      categoryItemsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.add-subcategory-btn');
+        if (btn) {
+          const catIndex = btn.dataset.catIndex;
+          const subcatContainer = btn.parentElement.previousElementSibling;
+          const subcatIndex = subcatContainer.querySelectorAll('.subcategory-item').length;
+          const subcatDiv = document.createElement('div');
+          subcatDiv.className = 'subcategory-item';
+          subcatDiv.innerHTML = `
+            <input type="text" name="gallerySection.categories[${catIndex}].subcategories" value="" class="wysiwyg-input capitalize" placeholder="Subcategory name">
+            <button type="button" class="remove-subcategory-btn" data-cat-index="${catIndex}" data-subcat-index="${subcatIndex}"><i class="fas fa-times"></i></button>
+          `;
+          subcatContainer.appendChild(subcatDiv);
+          updateDropdowns();
+        }
+      });
+
+      // Remove category
+      categoryItemsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.remove-category-btn');
+        if (btn) {
+          const categoryItem = btn.parentElement;
+          categoryItem.remove();
+          // Reindex categories
+          const categoryItems = categoryItemsContainer.querySelectorAll('.category-item');
+          categoryItems.forEach((item, index) => {
+            const nameInput = item.querySelector('input[name$=".name"]');
+            const subcatInputs = item.querySelectorAll('input[name$=".subcategories"]');
+            nameInput.name = `gallerySection.categories[${index}].name`;
+            subcatInputs.forEach(input => {
+              input.name = `gallerySection.categories[${index}].subcategories`;
+            });
+            item.querySelector('.add-subcategory-btn').dataset.catIndex = index;
+            item.querySelector('.remove-category-btn').dataset.catIndex = index;
+            const subcatButtons = item.querySelectorAll('.remove-subcategory-btn');
+            subcatButtons.forEach((subBtn, subIndex) => {
+              subBtn.dataset.catIndex = index;
+              subBtn.dataset.subcatIndex = subIndex;
+            });
+          });
+          updateDropdowns();
+        }
+      });
+
+      // Remove subcategory
+      categoryItemsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.remove-subcategory-btn');
+        if (btn) {
+          const subcategoryItem = btn.parentElement;
+          subcategoryItem.remove();
+          updateDropdowns();
+        }
+      });
+
+      // Update dropdowns when category or subcategory changes
+      categoryItemsContainer.addEventListener('input', (e) => {
+        if (e.target.name.includes('gallerySection.categories')) {
+          updateDropdowns();
+        }
+      });
+
+      // Update subcategory dropdown when category changes
+      galleryItemsContainer.addEventListener('change', (e) => {
+        const categorySelect = e.target.closest('.category-select');
+        if (categorySelect) {
+          const itemEdit = categorySelect.closest('.gallery-item-edit');
+          const itemIndex = Array.from(galleryItemsContainer.children).indexOf(itemEdit);
+          const subcategorySelect = itemEdit.querySelector(`select[name="items[${itemIndex}].subcategory"]`);
+          const categories = getCurrentCategories();
+          const selectedCategory = categories.find(c => c.name === categorySelect.value) || { subcategories: [] };
+          subcategorySelect.innerHTML = `
+            <option value="">None</option>
+            ${selectedCategory.subcategories.map(subcat => `
+              <option value="${subcat}">${subcat.charAt(0).toUpperCase() + subcat.slice(1)}</option>
+            `).join('')}
+          `;
+        }
+      });
+
+      // Add new gallery item
+      addGalleryItemBtn.addEventListener('click', () => {
+        const categories = getCurrentCategories();
+        const defaultCategory = categories.length > 0 ? categories[0].name : 'community';
+        const defaultSubcategories = categories.length > 0 ? categories[0].subcategories : [];
+        const galleryItemDiv = document.createElement('div');
+        galleryItemDiv.className = 'gallery-item-edit p-4';
+        galleryItemDiv.innerHTML = `
+          <img src="/images/placeholder-gallery.jpg" alt="Placeholder Image" class="w-full h-48 object-cover rounded-md mb-4">
+          <button type="button" class="remove-item-btn" data-index="${galleryItemIndex}"><i class="fas fa-times"></i></button>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <input type="text" name="items[${galleryItemIndex}].title" value="" class="wysiwyg-input w-full">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea name="items[${galleryItemIndex}].description" rows="3" class="wysiwyg-textarea w-full"></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select name="items[${galleryItemIndex}].category" class="wysiwyg-input w-full category-select capitalize">
+              ${categories.map(cat => `
+                <option value="${cat.name}" ${cat.name === defaultCategory ? 'selected' : ''}>
+                  ${cat.name.charAt(0).toUpperCase() + cat.name.slice(1)}
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+            <select name="items[${galleryItemIndex}].subcategory" class="wysiwyg-input w-full subcategory-select capitalize">
+              <option value="" selected>None</option>
+              ${defaultSubcategories.map(subcat => `
+                <option value="${subcat}">${subcat.charAt(0).toUpperCase() + subcat.slice(1)}</option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="wysiwyg-file-input-container">
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="galleryImage_${galleryItemIndex}">Image</label>
+            <input type="file" id="galleryImage_${galleryItemIndex}" name="galleryImage_${galleryItemIndex}" accept="image/*" class="wysiwyg-file-input">
+            <p class="mt-1 text-xs text-gray-500">Upload image for this item.</p>
+          </div>
+        `;
+        galleryItemsContainer.appendChild(galleryItemDiv);
+        galleryItemIndex++;
+      });
+
+      // Remove gallery item
+      galleryItemsContainer.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-item-btn')) {
+          const btn = e.target.closest('.remove-item-btn');
+          const galleryItem = btn.parentElement;
+          galleryItem.remove();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

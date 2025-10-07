@@ -1,0 +1,52 @@
+/* About page specific styles */
+.about-hero {
+    background-image: url('/images/about-hero.jpg');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 1.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 1.5s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  
+  section:not(.about-hero) {
+    padding: 4rem 1rem;
+  }
+  
+  .team-card img {
+    transition: transform 0.3s ease;
+  }
+  
+  .team-card:hover img {
+    transform: scale(1.05);
+  }
+  
+  @media (max-width: 768px) {
+    .about-hero h1 {
+      font-size: 2.5rem;
+    }
+    .about-hero p {
+      font-size: 1.25rem;
+    }
+  }

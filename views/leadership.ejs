@@ -1,0 +1,78 @@
+<%- include('partials/header') %>
+<main>
+<% if (typeof leadershipData !== 'undefined' && leadershipData && leadershipData.hero) { %>
+
+  <section id="leadership-public-hero" class="relative h-screen flex items-center justify-center overflow-hidden" style="background-image: url('<%= leadershipData.hero.backgroundImage || '/images/default-leadership-hero.jpg' %>'); background-size: 100% auto; background-position: center; background-repeat: no-repeat;">
+    <div class="absolute inset-0 bg-opacity-40"></div> <div class="container mx-auto px-4 relative z-10 text-center">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 animate-fade-in"><%= leadershipData.hero.title ?? 'Our Leadership' %></h1>
+      <p class="text-xl md:text-2xl text-white mb-10 max-w-3xl mx-auto animate-slide-up"><%= leadershipData.hero.subtitle ?? 'Meet the dedicated individuals guiding our mission.' %></p>
+    </div>
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-10">
+      <a href="#leadership-section-public" class="text-white opacity-70 hover:opacity-100 transition">
+        <i class="fas fa-chevron-down text-2xl"></i>
+      </a>
+    </div>
+  </section>
+
+  <section id="leadership-section-public" class="py-16 md:py-24 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4"><%= leadershipData.leadershipSection?.title ?? 'Leadership Hierarchy' %></h2>
+        <div class="w-24 h-1 bg-indigo-600 mx-auto mb-6"></div>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto"><%= leadershipData.leadershipSection?.subtitle ?? 'Learn about the key figures in our organization.' %></p>
+      </div>
+
+      <%# Display Mayor %>
+      <% if (leadershipData.leadershipSection?.mayor?.name) { %>
+          <div class="mb-16 max-w-4xl mx-auto">
+              <a href="<%= leadershipData.leadershipSection.mayor.link || '#' %>" class="block bg-gray-50 p-8 rounded-xl shadow-xl custom-shadow text-center hover:bg-gray-100 transition transform hover:-translate-y-2">
+                  <img src="<%= leadershipData.leadershipSection.mayor.image || 'https://via.placeholder.com/256x256?text=Mayor' %>" alt="<%= leadershipData.leadershipSection.mayor.name %>" class="w-48 h-48 md:w-64 md:h-64 rounded-full mx-auto mb-6 object-cover border-4 border-indigo-600">
+                  <h3 class="text-2xl md:text-3xl font-bold mb-2"><%= leadershipData.leadershipSection.mayor.name %></h3>
+                  <p class="text-lg md:text-xl text-indigo-600 mb-4"><%= leadershipData.leadershipSection.mayor.title %></p>
+                  <p class="text-gray-600 max-w-2xl mx-auto text-sm md:text-base"><%= leadershipData.leadershipSection.mayor.bio %></p>
+              </a>
+          </div>
+      <% } %>
+
+      <%# Display President %>
+      <% if (leadershipData.leadershipSection?.president?.name) { %>
+          <div class="mb-16 max-w-4xl mx-auto">
+              <a href="<%= leadershipData.leadershipSection.president.link || '#' %>" class="block bg-gray-50 p-8 rounded-xl shadow-xl custom-shadow text-center hover:bg-gray-100 transition transform hover:-translate-y-2">
+              <img src="<%= leadershipData.leadershipSection.president.image || 'https://via.placeholder.com/256x256?text=President' %>" alt="<%= leadershipData.leadershipSection.president.name %>" class="w-48 h-48 md:w-64 md:h-64 rounded-full mx-auto mb-6 object-cover border-4 border-indigo-600">
+              <h3 class="text-2xl md:text-3xl font-bold mb-2"><%= leadershipData.leadershipSection.president.name %></h3>
+              <p class="text-lg md:text-xl text-indigo-600 mb-4"><%= leadershipData.leadershipSection.president.title %></p>
+              <p class="text-gray-600 max-w-2xl mx-auto text-sm md:text-base"><%= leadershipData.leadershipSection.president.bio %></p>
+              </a>
+          </div>
+      <% } %>
+
+      <%# Display Team Members %>
+      <% if(leadershipData.leadershipSection?.teamMembers && leadershipData.leadershipSection.teamMembers.length > 0) { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <% leadershipData.leadershipSection.teamMembers.forEach(member => { %>
+            <a href="<%= member.link || '#' %>" class="block bg-white p-6 rounded-xl shadow-lg hover:bg-gray-50 transition transform hover:-translate-y-2 custom-shadow text-center">
+              <img src="<%= member.image || 'https://via.placeholder.com/128x128?text=Person' %>" alt="<%= member.name %>" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
+              <h3 class="text-xl font-semibold mb-2"><%= member.name %></h3>
+              <p class="text-gray-600 mb-1"><%= member.title %></p>
+              <p class="text-gray-500 text-xs italic mb-2"><%= member.tenure %></p> <p class="text-gray-600 text-sm leading-relaxed"><%= member.bio %></p>
+            </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <p class="text-center text-gray-500 italic">Leadership team details not available at the moment.</p>
+      <% } %>
+    </div>
+  </section>
+
+<% } else { %>
+    <section class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-2xl font-semibold text-red-600">Leadership Content Unavailable</h2>
+            <p class="text-gray-600 mt-4">We couldn't load the leadership page content at this time. Please try again later.</p>
+        </div>
+    </section>
+<% } %>
+</main>
+
+</body>
+</html>

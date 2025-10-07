@@ -1,0 +1,292 @@
+<%- include('partials/header') %>
+<style>
+  .images-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  .story-image {
+    width: 100%;
+    height: 16rem;
+    object-fit: cover; /* Changed to cover for better look without stretching */
+  }
+  #contact-hero > div:first-child {
+    background-size: contain; /* No zoom */
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  #imageModal {
+    display: none; /* Use display none instead of hidden for compatibility */
+  }
+  .max-w-90\% {
+    max-width: 90%;
+  }
+  .max-h-90\% {
+    max-height: 90%;
+  }
+</style>
+<main>
+<% if (typeof contactData !== 'undefined' && contactData && contactData.hero) { %>
+
+  <!-- Hero Section -->
+  <section id="contact-hero" class="relative h-screen flex items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat text-white" style="background-image: url('<%= contactData.hero.backgroundImage || '/images/default-contact-hero.jpg' %>'); background-size: contain; background-position: center;">
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-indigo-900/60 z-10"></div>
+    <div class="container mx-auto px-4 relative z-20 text-center max-w-6xl">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in text-shadow-lg drop-shadow-2xl" style="text-shadow: 2px 4px 8px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.3);">
+        <%= contactData.hero.title ?? 'Get in Touch' %>
+      </h1>
+      <p class="text-xl md:text-2xl max-w-4xl mx-auto animate-slide-up leading-relaxed text-shadow-md drop-shadow-lg" style="text-shadow: 1px 2px 4px rgba(0,0,0,0.6);">
+        <%= contactData.hero.subtitle ?? 'We are here to help and answer any question you might have.' %>
+      </p>
+    </div>
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <a href="#contact-info" class="text-white opacity-70 hover:opacity-100 transition">
+        <i class="fas fa-chevron-down text-2xl"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- Contact Info Section -->
+  <section id="contact-info" class="py-20 md:py-24 bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-100 relative overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute inset-0 opacity-20 z-[-1]">
+      <div class="absolute top-0 -left-4 w-72 h-72 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+      <div class="absolute top-0 -right-4 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+      <div class="absolute -bottom-8 left-20 w-72 h-72 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+    </div>
+    <!-- Geometric stripes -->
+    <div class="absolute inset-0 opacity-5 z-[-1]">
+      <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-400 via-blue-500 to-purple-500 transform -skew-y-1"></div>
+      <div class="absolute top-16 left-0 w-full h-1 bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 transform skew-y-1"></div>
+      <div class="absolute bottom-16 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 transform -skew-y-1"></div>
+      <div class="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-blue-400 to-purple-400 transform skew-y-1"></div>
+    </div>
+    <div class="container mx-auto px-4 relative z-10 max-w-6xl">
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-6">
+          <i class="fas fa-address-book text-2xl text-indigo-600"></i>
+        </div>
+        <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+          <%= contactData.infoSection?.title ?? 'Connect With Us' %>
+        </h2>
+        <div class="w-24 h-1 bg-gradient-to-r from-indigo-500 to-blue-500 mx-auto mb-6 rounded-full"></div>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto"><%= contactData.infoSection?.subtitle ?? 'Find our location and other ways to get in touch.' %></p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 custom-shadow text-center">
+          <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="<%= contactData.infoSection?.address?.icon ?? 'fas fa-map-marker-alt' %> text-indigo-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Visit Us</h3>
+          <p class="text-gray-600 whitespace-pre-line"><%= contactData.infoSection?.address?.lines ?? 'Address not set.' %></p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 custom-shadow text-center">
+          <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="<%= contactData.infoSection?.phone?.icon ?? 'fas fa-phone-alt' %> text-indigo-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Call Us</h3>
+          <p class="text-gray-600"><a href="<%= contactData.infoSection?.phone?.link ?? '#' %>" class="hover:text-indigo-600 transition"><%= contactData.infoSection?.phone?.number ?? 'Phone not set.' %></a></p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 custom-shadow text-center">
+          <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="<%= contactData.infoSection?.email?.icon ?? 'fas fa-envelope' %> text-indigo-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Email Us</h3>
+          <p class="text-gray-600"><a href="<%= contactData.infoSection?.email?.link ?? '#' %>" class="hover:text-indigo-600 transition"><%= contactData.infoSection?.email?.address ?? 'Email not set.' %></a></p>
+        </div>
+      </div>
+      <div class="mt-12 max-w-4xl mx-auto">
+        <div class="bg-gray-200 h-96 rounded-xl overflow-hidden shadow-lg custom-shadow border border-gray-300">
+          <% if (contactData.infoSection?.mapEmbedUrl && contactData.infoSection.mapEmbedUrl.startsWith('https://')) { %>
+            <iframe
+              src="<%= contactData.infoSection.mapEmbedUrl %>"
+              width="100%"
+              height="100%"
+              style="border:0;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          <% } else { %>
+            <div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-500">
+              Map not available.
+              <% if (typeof isAdmin !== 'undefined' && isAdmin) { %><span class="ml-1">Please configure a valid embed URL in the admin panel.</span><% } %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Form Section -->
+  <section id="contact-form-public" class="py-20 md:py-24 bg-gradient-to-br from-slate-100 via-gray-50 to-blue-100 relative overflow-hidden">
+    <!-- Decorative elements -->
+    <div class="absolute inset-0 opacity-15 z-[-1]">
+      <div class="absolute top-10 left-10 w-64 h-64 bg-gradient-to-br from-blue-300 to-indigo-400 rounded-full mix-blend-multiply filter blur-2xl"></div>
+      <div class="absolute bottom-10 right-10 w-64 h-64 bg-gradient-to-br from-purple-300 to-blue-400 rounded-full mix-blend-multiply filter blur-2xl"></div>
+    </div>
+    <!-- Diagonal stripes pattern -->
+    <div class="absolute inset-0 opacity-5 z-[-1]">
+      <svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="diagonal-stripes" patternUnits="userSpaceOnUse" width="40" height="40">
+            <path d="M0,40 L40,0 M-10,10 L10,-10 M30,50 L50,30" stroke="#4f46e5" stroke-width="2"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#diagonal-stripes)"/>
+      </svg>
+    </div>
+    <div class="container mx-auto px-4 relative z-10 max-w-6xl">
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-6">
+          <i class="fas fa-envelope text-2xl text-indigo-600"></i>
+        </div>
+        <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+          <%= contactData.formSection?.title ?? 'Send Us a Message' %>
+        </h2>
+        <div class="w-24 h-1 bg-gradient-to-r from-indigo-500 to-blue-500 mx-auto mb-6 rounded-full"></div>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto"><%= contactData.formSection?.subtitle ?? 'Fill out the form below and we will get back to you as soon as possible.' %></p>
+      </div>
+      <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg custom-shadow border border-gray-100">
+        <form id="contactForm" class="space-y-6"> 
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+            <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500 transition" required aria-label="Full Name">
+            <p class="error text-red-600 text-sm mt-1 hidden">Please enter your name.</p>
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" id="email" name="email" class="mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500 transition" required aria-label="Email Address">
+            <p class="error text-red-600 text-sm mt-1 hidden">Please enter a valid email address.</p>
+          </div>
+          <div>
+            <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
+            <input type="text" id="subject" name="subject" class="mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500 transition" required aria-label="Subject">
+            <p class="error text-red-600 text-sm mt-1 hidden">Please enter a subject.</p>
+          </div>
+          <div>
+            <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+            <textarea id="message" name="message" rows="5" class="mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500 transition" required aria-label="Your Message"></textarea>
+            <p class="error text-red-600 text-sm mt-1 hidden">Please enter your message.</p>
+          </div>
+          <div>
+            <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 transition transform hover:scale-105 shadow-md flex items-center justify-center">
+              <i class="fas fa-paper-plane mr-2"></i>
+              Send Message
+            </button>
+          </div>
+        </form>
+        <div id="success-message" class="hidden text-center mt-6 p-4 bg-green-100 text-green-800 rounded-lg">
+          <p class="font-medium">Thank you for your message! We’ll get back to you soon.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<% } else { %>
+    <section class="py-20 md:py-24 bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-100 relative overflow-hidden">
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <h2 class="text-2xl font-semibold text-red-600">Contact Content Unavailable</h2>
+            <p class="text-gray-600 mt-4">We couldn't load the contact page content. Please try again later.</p>
+        </div>
+    </section>
+<% } %>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-12 border-t-4 border-indigo-500">
+  <div class="container mx-auto text-center px-4">
+    <div class="mb-6">
+      <h3 class="text-2xl font-bold mb-2">PMAFA</h3>
+      <p class="text-gray-300">Committed to Community Excellence</p>
+    </div>
+    <div class="border-t border-gray-700 pt-6">
+      <% if (typeof contactData !== 'undefined' && contactData && contactData.footer && contactData.footer.copyright) { %>
+        <p class="text-gray-400"><%= contactData.footer.copyright %></p>
+      <% } else if (typeof footerData !== 'undefined' && footerData && footerData.copyright ) { %>
+        <p class="text-gray-400"><%= footerData.copyright %></p>
+      <% } else { %>
+        <p class="text-gray-400">© <%= new Date().getFullYear() %> Your Organization Name. All rights reserved.</p>
+      <% } %>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/contact.js"></script>
+
+<style>
+/* Custom animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 1s ease-out 0.3s both;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-bounce {
+  animation: bounce 2s infinite;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Enhanced text shadows for hero */
+.text-shadow-lg {
+  text-shadow: 2px 4px 8px rgba(0,0,0,0.5), 0 0 20px rgba(0,0,0,0.3);
+}
+
+.text-shadow-md {
+  text-shadow: 1px 2px 4px rgba(0,0,0,0.6);
+}
+
+/* Smooth hover transitions */
+.hover\:shadow-2xl:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Hero background fix - FULL HEIGHT, NO ZOOM */
+#contact-hero {
+  background-attachment: scroll !important;
+  background-size: contain !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-color: #f8fafc; /* Light background color to fill empty space */
+}
+</style>
+
+</body>
+</html>
