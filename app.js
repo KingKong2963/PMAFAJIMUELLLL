@@ -12,7 +12,7 @@ const HomePage = require('./models/HomePage');
 const User = require('./models/User');
 
 const app = express();
-const port = 3000;
+const port = 80;
 const dbURI = process.env.MONGODB_URI || process.env.DB;
 
 if (!dbURI) {
